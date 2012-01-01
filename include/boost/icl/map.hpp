@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------+
-Copyright (c) 2007-2010: Joachim Faulhaber
+Copyright (c) 2007-2011: Joachim Faulhaber
 +------------------------------------------------------------------------------+
    Distributed under the Boost Software License, Version 1.0.
       (See accompanying file LICENCE.txt or copy at
@@ -10,18 +10,15 @@ Copyright (c) 2007-2010: Joachim Faulhaber
 
 #include <boost/icl/impl_config.hpp>
 
-#if defined(ICL_USE_BOOST_INTERPROCESS_IMPLEMENTATION)
-#include <boost/interprocess/containers/map.hpp>
-#include <boost/interprocess/containers/set.hpp>
-#include <boost/interprocess/containers/flat_set.hpp> //FLAS JODO URG
-#include <boost/interprocess/containers/flat_map.hpp> //FLAS
-#elif defined(ICL_USE_BOOST_MOVE_IMPLEMENTATION)
-#include <boost/container/map.hpp>
-#include <boost/container/set.hpp>
-#include <boost/move/move.hpp> //MOV JODO URG <boost/icl/move.hpp>
-#else 
-#include <map>
-#include <set>
+#if defined(ICL_USE_BOOST_MOVE_IMPLEMENTATION)
+#   include <boost/container/map.hpp>
+#   include <boost/container/set.hpp>
+#elif defined(ICL_USE_STD_IMPLEMENTATION)
+#   include <map>
+#   include <set>
+#else // Default for implementing containers
+#   include <map>
+#   include <set>
 #endif
 
 #include <string>
@@ -158,10 +155,6 @@ public:
 
     BOOST_STATIC_CONSTANT(int, fineness = 4); 
 
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    BOOST_COPYABLE_AND_MOVABLE(map)
-#   endif
-
 public:
     //==========================================================================
     //= Construct, copy, destruct
@@ -194,43 +187,38 @@ public:
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }
 
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    map(BOOST_RV_REF(map) src)
-        : base_type(boost::move(static_cast<base_type&>(src)))
-    {
-        std::cout << "m.";//CL
-        BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
-        BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
-    }
-#   endif //BOOST_ICL_IS_MOVE_AWARE
-
     explicit map(const element_type& key_value_pair): base_type::map()
     { 
         insert(key_value_pair); 
     }
 
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    map& operator=(BOOST_RV_REF(map) src) 
+    map& operator = (map& src) 
     { 
-        std::cout << "m=";//CL
-        base_type::operator=(static_cast<base_type&>(src));
+        base_type::operator=(src);
         return *this; 
     } 
 
-    map& operator=(BOOST_COPY_ASSIGN_REF(map) src) 
+#   ifndef BOOST_NO_RVALUE_REFERENCES
+    //==========================================================================
+    //= Move semantics
+    //==========================================================================
+
+    map(map&& src)
+        : base_type(boost::move(src))
+    {
+        BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
+        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
+        BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
+    }
+
+    map& operator = (map&& src) 
     { 
-        base_type::operator=(static_cast<const base_type&>(src));
+        base_type::operator=(src);
         return *this; 
     } 
-#   else
-    map& operator=(const map& src) 
-    { 
-        base_type::operator=(static_cast<const base_type&>(src));
-        return *this; 
-    } 
-#   endif //BOOST_ICL_IS_MOVE_AWARE
+    //==========================================================================
+#   endif // BOOST_NO_RVALUE_REFERENCES
 
     void swap(map& src) { base_type::swap(src); }
 
@@ -345,6 +333,14 @@ public:
             return end();
         else
             return base_type::insert(prior, value_pair);
+    }
+
+    template<class Iterator>
+    iterator insert(Iterator first, Iterator last)
+    {
+        iterator prior = end(), it = first;
+        while(it != last)
+            prior = this->insert(prior, *it++);
     }
 
     /** With <tt>key_value_pair = (k,v)</tt> set value \c v for key \c k */

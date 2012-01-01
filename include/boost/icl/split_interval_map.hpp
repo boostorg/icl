@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------+
-Copyright (c) 2007-2009: Joachim Faulhaber
+Copyright (c) 2007-2012: Joachim Faulhaber
 Copyright (c) 1999-2006: Cortex Software GmbH, Kantstrasse 57, Berlin
 +------------------------------------------------------------------------------+
    Distributed under the Boost Software License, Version 1.0.
@@ -62,10 +62,6 @@ public:
 
     enum { fineness = 3 };
 
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    BOOST_COPYABLE_AND_MOVABLE(split_interval_map)
-#   endif
-
 public:
     //==========================================================================
     //= Construct, copy, destruct
@@ -75,12 +71,6 @@ public:
 
     /// Copy constructor
     split_interval_map(const split_interval_map& src): base_type(src) {}
-
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    /// Move constructor
-    split_interval_map(BOOST_RV_REF(split_interval_map) src)
-        : base_type(boost::move(static_cast<base_type&>(src))){}
-#   endif
 
     explicit split_interval_map(domain_mapping_type& base_pair): base_type()
     { this->add(base_pair); }
@@ -95,21 +85,34 @@ public:
                                  Traits,Compare,Combine,Section,Interval,Alloc>& src)
     { this->assign(src); return *this; }
 
-
     /// Assignment from a base interval_map.
     template<class SubType>
     void assign(const interval_base_map<SubType,DomainT,CodomainT,
                                         Traits,Compare,Combine,Section,Interval,Alloc>& src)
     {
         this->clear();
-        this->_map.insert(src.begin(), src.end()); //JODO URG new boost.container compiler problem
-        /*hack
-        typedef typename
-        interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combine,Section,Interval,Alloc> src_type;
-        ICL_const_FORALL(src_type, it_, src)
-            this->insert(*it_);
-        */
+        this->_map.insert(src.begin(), src.end());
     }
+
+#   ifndef BOOST_NO_RVALUE_REFERENCES
+    //==========================================================================
+    //= Move semantics
+    //==========================================================================
+
+    /// Move constructor
+    split_interval_map(split_interval_map&& src)
+        : base_type(boost::move(src))
+    {}
+
+    /// Move assignment operator
+    split_interval_map& operator = (split_interval_map&& src)
+    { 
+        base_type::operator=(boost::move(src));
+        return *this;
+    }
+
+    //==========================================================================
+#   endif // BOOST_NO_RVALUE_REFERENCES
 
 private:
     // Private functions that shall be accessible by the baseclass:

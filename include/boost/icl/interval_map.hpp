@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------------+
-Copyright (c) 2008-2009: Joachim Faulhaber
+Copyright (c) 2008-2012: Joachim Faulhaber
 +------------------------------------------------------------------------------+
    Distributed under the Boost Software License, Version 1.0.
       (See accompanying file LICENCE.txt or copy at
@@ -68,10 +68,6 @@ public:
 
     enum { fineness = 1 };
 
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    BOOST_COPYABLE_AND_MOVABLE(interval_map)
-#   endif
-
 public:
     //==========================================================================
     //= Construct, copy, destruct
@@ -82,12 +78,6 @@ public:
 
     /// Copy constructor
     interval_map(const interval_map& src): base_type(src) {}
-
-#   ifdef BOOST_ICL_IS_MOVE_AWARE
-    /// Move constructor
-    interval_map(BOOST_RV_REF(interval_map) src)
-        : base_type(boost::move(static_cast<base_type&>(src))){}
-#   endif //BOOST_ICL_IS_MOVE_AWARE
 
     /// Copy constructor for base_type
     template<class SubType>
@@ -101,6 +91,7 @@ public:
 
     explicit interval_map(const value_type& value_pair): base_type()
     { this->add(value_pair); }
+
 
     /// Assignment operator
     template<class SubType>
@@ -121,6 +112,26 @@ public:
         ICL_const_FORALL(typename base_map_type, it_, src) 
             prior_ = this->add(prior_, *it_); 
     }
+
+#   ifndef BOOST_NO_RVALUE_REFERENCES
+    //==========================================================================
+    //= Move semantics
+    //==========================================================================
+
+    /// Move constructor
+    interval_map(interval_map&& src)
+        : base_type(boost::move(src))
+    {}
+
+    /// Move assignment operator
+    interval_map& operator = (interval_map&& src)
+    { 
+        base_type::operator=(boost::move(src));
+        return *this;
+    }
+
+    //==========================================================================
+#   endif // BOOST_NO_RVALUE_REFERENCES
 
 private:
     // Private functions that shall be accessible by the baseclass:
