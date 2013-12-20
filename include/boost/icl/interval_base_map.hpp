@@ -847,7 +847,7 @@ inline void interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combine,S
     {
         // [lead_gap--- . . .
         //          [-- it_ ...
-        iterator prior_ = prior(it_); 
+        iterator prior_ = it_==this->_map.begin()? it_ : prior(it_); 
         iterator inserted_ = this->template gap_insert<Combiner>(prior_, lead_gap, co_val);
         that()->handle_inserted(prior_, inserted_);
     }
@@ -959,7 +959,7 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
     {
         // Detect the first and the end iterator of the collision sequence
         iterator first_ = this->_map.lower_bound(inter_val),
-                 last_  = insertion.first;
+                 last_  = prior(this->_map.upper_bound(inter_val));
         //assert(end_ == this->_map.upper_bound(inter_val));
         iterator it_ = first_;
         interval_type rest_interval = inter_val;

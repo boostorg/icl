@@ -138,6 +138,19 @@ struct map_val
         return segment_type(inter_val, test_value<codomain_type>::make(val)); 
     }
 
+    /*CL?
+    static interval_type interval_(int lower, int upper, int bounds = 2)
+    {
+        return segment_type(inter_val, test_value<codomain_type>::make(val)); 
+    }
+
+    static segment_type val_pair(int lower, int upper, int val, int bounds = 2)
+    {
+        return segment_type( interval_(lower, upper, static_cast<bound_type>(bounds)), 
+                             test_value<codomain_type>::make(val) );
+    }
+    */
+
     static domain_mapping_type map_pair(int key, int val)
     {
         return domain_mapping_type(test_value<  domain_type>::make(key), 
