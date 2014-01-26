@@ -1098,9 +1098,7 @@ inline void interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combine,S
                   iterator& it_, const iterator& last_)
 {
     iterator end_   = boost::next(last_);
-    iterator prior_ = it_, inserted_;
-    if(prior_ != this->_map.end())
-        --prior_;
+    iterator prior_ = cyclic_prior(*this,it_), inserted_;
     interval_type rest_interval = inter_val, left_gap, cur_itv;
     interval_type last_interval = last_ ->first;
 
@@ -1154,7 +1152,7 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
     {
         // Detect the first and the end iterator of the collision sequence
         iterator first_ = this->_map.lower_bound(inter_val),
-                 last_  = insertion.first;
+                 last_  = prior(this->_map.upper_bound(inter_val));
         //assert((++last_) == this->_map.upper_bound(inter_val));
         iterator it_ = first_;
         insert_main(inter_val, co_val, it_, last_);
