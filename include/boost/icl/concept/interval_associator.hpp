@@ -474,7 +474,7 @@ template<class Type, class OperandT>
 typename enable_if<is_right_intra_combinable<Type, OperandT>, Type>::type&
 operator |= (Type& object, const OperandT& operand)
 { 
-    return object += operand; 
+    return object |= operand; 
 }
 
 #ifdef BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -489,7 +489,7 @@ template<class Type, class OperandT>
 typename enable_if<is_binary_intra_combinable<Type, OperandT>, Type>::type
 operator | (Type object, const OperandT& operand)
 {
-    return object += operand; 
+    return object |= operand; 
 }
 
 #else //BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -499,14 +499,14 @@ typename enable_if<is_binary_intra_combinable<Type, OperandT>, Type>::type
 operator | (const Type& object, const OperandT& operand)
 {
     Type temp = object;
-    return boost::move(temp += operand); 
+    return boost::move(temp |= operand); 
 }
 
 template<class Type, class OperandT>
 typename enable_if<is_binary_intra_combinable<Type, OperandT>, Type>::type
 operator | (Type&& object, const OperandT& operand)
 {
-    return boost::move(object += operand); 
+    return boost::move(object |= operand); 
 }
 
 #endif //BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -533,14 +533,14 @@ typename enable_if<is_binary_intra_combinable<Type, OperandT>, Type>::type
 operator | (const OperandT& operand, const Type& object)
 {
     Type temp = object;
-    return boost::move(temp += operand);
+    return boost::move(temp |= operand);
 }
 
 template<class Type, class OperandT>
 typename enable_if<is_binary_intra_combinable<Type, OperandT>, Type>::type
 operator | (const OperandT& operand, Type&& object)
 {
-    return boost::move(object += operand); 
+    return boost::move(object |= operand); 
 }
 
 #endif //BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -557,7 +557,7 @@ template<class Type>
 typename enable_if<is_interval_container<Type>, Type>::type
 operator | (Type object, const Type& operand)
 {
-    return object += operand; 
+    return object |= operand; 
 }
 #else //BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
 
@@ -566,28 +566,28 @@ typename enable_if<is_interval_container<Type>, Type>::type
 operator | (const Type& object, const Type& operand)
 {
     Type temp = object;
-    return boost::move(temp += operand); 
+    return boost::move(temp |= operand); 
 }
 
 template<class Type>
 typename enable_if<is_interval_container<Type>, Type>::type
 operator | (Type&& object, const Type& operand)
 {
-    return boost::move(object += operand); 
+    return boost::move(object |= operand); 
 }
 
 template<class Type>
 typename enable_if<is_interval_container<Type>, Type>::type
 operator | (const Type& operand, Type&& object)
 {
-    return boost::move(object += operand); 
+    return boost::move(object |= operand); 
 }
 
 template<class Type>
 typename enable_if<is_interval_container<Type>, Type>::type
 operator | (Type&& object, Type&& operand)
 {
-    return boost::move(object += operand); 
+    return boost::move(object |= operand); 
 }
 
 #endif //BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
