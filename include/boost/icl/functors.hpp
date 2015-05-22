@@ -252,6 +252,22 @@ namespace boost{namespace icl
     template<>
     inline std::string unary_template_to_string<inplace_min>::apply() { return "min="; }
 
+
+    // ------------------------------------------------------------------------
+    template <typename Type> struct inplace_assign
+        : public identity_based_inplace_combine<Type>
+    {
+        typedef inplace_assign<Type> type;
+
+        void operator()(Type& object, const Type& operand)const
+        {
+            object = operand;
+        }
+    };
+
+    template<>
+    inline std::string unary_template_to_string<inplace_assign>::apply() { return "="; }
+
     //--------------------------------------------------------------------------
     // Inter_section functor
     //--------------------------------------------------------------------------

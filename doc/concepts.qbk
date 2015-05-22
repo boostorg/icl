@@ -208,11 +208,12 @@ For `Combine` functors, the Icl provides an __inverse__ functor.
 [[__ip_star__`<T>`]    [__ip_slash__`<T>`]    ]
 [[__ip_max__`<T>`]     [__ip_min__`<T>`]    ]
 [[__ip_identity__`<T>`][__ip_erasure__`<T>`]]
+[[__ip_assign__`<T>`]  [`no inverse`]]
 [[`Functor`]           [__ip_erasure__`<T>`]]
 ]
 
 The meta function __inverse__ is mutually implemented for
-all but the default functor `Functor`
+all but the default functor `Functor` and the assign functor
 such that e.g.
 `inverse<inplace_minus<T> >::type` yields `inplace_plus<T>`.
 Not in every case, e.g. `max/min`, does the __inverse__ functor

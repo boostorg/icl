@@ -92,6 +92,7 @@ Distributed under the Boost Software License, Version 1.0.
 [def __ip_caret__     [classref boost::icl::inplace_caret    inplace_caret]]
 [def __ip_min__       [classref boost::icl::inplace_min      inplace_min]]
 [def __ip_max__       [classref boost::icl::inplace_max      inplace_max]]
+[def __ip_assign__    [classref boost::icl::inplace_assign   inplace_assign]]
 [def __ip_identity__  [classref boost::icl::inplace_identity inplace_identity]]
 [def __ip_erasure__   [classref boost::icl::inplace_erasure  inplace_erasure]]
 [def __ip_bitset_union__      [classref boost::icl::inplace_bitset_union      inplace_bitset_union]]
