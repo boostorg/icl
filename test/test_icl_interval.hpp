@@ -91,7 +91,7 @@ void coverable_asymmetric_interval_4_bicremental_types()
     typedef typename icl::size_type_of<T>::type SizeT;
     typedef typename icl::difference_type_of<T>::type DiffT;
     //T t_0     = icl::identity_element<T>::value();
-    SizeT s_1 = icl::unit_element<SizeT>::value();
+    //SizeT s_1 = icl::unit_element<SizeT>::value();
     DiffT d_1 = icl::unit_element<DiffT>::value();
 
     //JODO BOOST_CHECK( is_incremental_coverable<IntervalT>::value ); 
