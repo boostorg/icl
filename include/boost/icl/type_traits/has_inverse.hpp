@@ -19,7 +19,7 @@ namespace boost{ namespace icl
         typedef has_inverse<Type> type;
         BOOST_STATIC_CONSTANT(bool, 
             value = (   boost::is_signed<Type>::value 
-                     or is_floating_point<Type>::value ) ); 
+                     || is_floating_point<Type>::value ) ); 
     };
 
 }} // namespace boost icl

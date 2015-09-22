@@ -24,7 +24,7 @@ template<class Type> struct has_std_infinity
     typedef has_std_infinity type;
     BOOST_STATIC_CONSTANT(bool, 
         value = (     is_numeric<Type>::value
-                  and std::numeric_limits<Type>::has_infinity
+                   && std::numeric_limits<Type>::has_infinity
                 )
        );
 };
@@ -34,7 +34,7 @@ template<class Type> struct has_max_infinity
     typedef has_max_infinity type;
     BOOST_STATIC_CONSTANT(bool, 
         value = (     is_numeric<Type>::value
-                  and not std::numeric_limits<Type>::has_infinity
+                   && ! std::numeric_limits<Type>::has_infinity
                 )
        );
 };
