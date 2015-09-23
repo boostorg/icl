@@ -455,7 +455,7 @@ enable_if< mpl::and_< mpl::or_<is_static_right_open<Type>, is_static_open<Type> 
          , typename interval_traits<Type>::domain_type>::type
 last_next(const Type& object)
 { 
-    typedef typename interval_traits<Type>::domain_type domain_type;
+    //CL typedef typename interval_traits<Type>::domain_type domain_type;
     return upper(object); // NOTE: last_next is implemented to avoid calling pred(object)
 }                         // For unsigned integral types this may cause underflow.
 
