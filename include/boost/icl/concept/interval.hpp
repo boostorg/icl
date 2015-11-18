@@ -1124,7 +1124,7 @@ hull(Type left, const Type& right)
 //==============================================================================
 //- left_subtract --------------------------------------------------------------
 /** subtract \c left_minuend from the \c right interval on it's left side. 
-    Return the difference: The part of \c right right of \c left_minuend.
+    Return the difference: The part of \c right left of \c left_minuend.
 \code
 right_over = right - left_minuend; //on the left.
 ...      d) : right
@@ -1148,6 +1148,8 @@ left_subtract(Type right, const Type& left_minuend)
 {
     if(exclusive_less(left_minuend, right))
         return right; 
+    else if(upper_less_equal(right, left_minuend))
+        return identity_element<Type>::value();
 
     return construct<Type>(domain_next<Type>(upper(left_minuend)), upper(right));
 }
