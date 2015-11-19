@@ -1124,7 +1124,7 @@ hull(Type left, const Type& right)
 //==============================================================================
 //- left_subtract --------------------------------------------------------------
 /** subtract \c left_minuend from the \c right interval on it's left side. 
-    Return the difference: The part of \c right left of \c left_minuend.
+    Return the difference: The part of \c right right of \c left_minuend.
 \code
 right_over = right - left_minuend; //on the left.
 ...      d) : right
@@ -1177,7 +1177,7 @@ left_subtract(Type right, const Type& left_minuend)
 
 //- right_subtract -------------------------------------------------------------
 /** subtract \c right_minuend from the \c left interval on it's right side. 
-    Return the difference: The part of \c left right of \c right_minuend.
+    Return the difference: The part of \c left left of \c right_minuend.
 \code
 left_over = left - right_minuend; //on the right side.
 [a      ...  : left
