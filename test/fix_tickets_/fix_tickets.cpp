@@ -9,8 +9,6 @@ Copyright (c) 2011-2011: Joachim Faulhaber
 #include <libs/icl/test/disable_test_warnings.hpp>
 #include "../unit_test_unwarned.hpp"
 
-#include <iostream> //CL
-
 //#define BOOST_ICL_USE_STATIC_BOUNDED_INTERVALS
 #include <boost/icl/interval_map.hpp>
 #include <boost/icl/split_interval_map.hpp>
