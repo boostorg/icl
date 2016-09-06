@@ -92,6 +92,15 @@ public:
     explicit interval_map(const value_type& value_pair): base_type()
     { this->add(value_pair); }
 
+    /// Constructor for a range of intervals
+    template <typename InputIterator>
+    interval_map(InputIterator first, const InputIterator last)
+    {
+      for (; first != last; ++first)
+      {
+        this->add(*first);
+      }
+    }
 
     /// Assignment from a base interval_map.
     template<class SubType>

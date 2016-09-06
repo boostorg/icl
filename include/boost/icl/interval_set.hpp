@@ -115,6 +115,16 @@ public:
         this->add(itv); 
     }
 
+    /// Constructor for a range of intervals
+    template <typename InputIterator>
+    interval_set(InputIterator first, const InputIterator last)
+    {
+      for (; first != last; ++first)
+      {
+        this->add(*first);
+      }
+    }
+
     /// Assignment from a base interval_set.
     template<class SubType>
     void assign(const interval_base_set<SubType,DomainT,Compare,Interval,Alloc>& src)
