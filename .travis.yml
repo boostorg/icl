@@ -80,7 +80,7 @@ install:
   - ./b2 headers
 
 script:
-  - ./b2 libs/icl/test toolset=$TOOLSET cxxstd=$CXXSTD
+  - ./b2 -j 3 libs/icl/test toolset=$TOOLSET cxxstd=$CXXSTD
 
 notifications:
   email:
