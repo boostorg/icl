@@ -1,4 +1,4 @@
-/*-----------------------------------------------------------------------------+    
+/*-----------------------------------------------------------------------------+
 Copyright (c) 2011-2011: Joachim Faulhaber
 +------------------------------------------------------------------------------+
    Distributed under the Boost Software License, Version 1.0.
@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE(ticket_6095_Marvin_Sielenkemper_totalRangeTest)
     typedef int                                                              Value;
     typedef boost::icl::interval<Value>                                      Interval;
     typedef std::numeric_limits<Value>                                       Limits;
-    typedef boost::icl::interval_map<Value, int, boost::icl::total_enricher> Container;
 
     Value const min((Limits::min)());
     Value const max((Limits::max)());
@@ -107,7 +106,7 @@ BOOST_AUTO_TEST_CASE(ticket_11308_Stephen_Hewitt_extreme_valued_closed_intervals
     s2 += interval_t(0x0000, 0xffff);
     s2 += interval_t(0xa000, 0xbfff);
 
-    BOOST_CHECK_EQUAL(s1, s2);    
+    BOOST_CHECK_EQUAL(s1, s2);
 }
 
 BOOST_AUTO_TEST_CASE(extreme_valued_right_open_intervals)
@@ -124,7 +123,7 @@ BOOST_AUTO_TEST_CASE(extreme_valued_right_open_intervals)
     s2 += interval_t(0x0000, 0xffff);
     s2 += interval_t(0xa000, 0xc000);
 
-    BOOST_CHECK_EQUAL(s1, s2);    
+    BOOST_CHECK_EQUAL(s1, s2);
 }
 
 BOOST_AUTO_TEST_CASE(extreme_valued_left_open_intervals)
@@ -136,12 +135,12 @@ BOOST_AUTO_TEST_CASE(extreme_valued_left_open_intervals)
 
     s1 += interval_t(0x0000, 0x9fff); //Contains 1 as smallest element
     s1 += interval_t(0x9fff, 0xbfff);
-    s1 += interval_t(0xbfff, 0xffff); 
+    s1 += interval_t(0xbfff, 0xffff);
 
     s2 += interval_t(0x0000, 0xffff);
     s2 += interval_t(0x9fff, 0xbfff);
 
-    BOOST_CHECK_EQUAL(s1, s2);    
+    BOOST_CHECK_EQUAL(s1, s2);
 }
 
 BOOST_AUTO_TEST_CASE(extreme_valued_open_intervals)
@@ -158,6 +157,5 @@ BOOST_AUTO_TEST_CASE(extreme_valued_open_intervals)
     s2 += interval_t(0x0000, 0xffff);
     s2 += interval_t(0x9fff, 0xc000);
 
-    BOOST_CHECK_EQUAL(s1, s2);    
+    BOOST_CHECK_EQUAL(s1, s2);
 }
-
