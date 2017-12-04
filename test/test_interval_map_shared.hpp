@@ -24,7 +24,6 @@ void interval_map_fundamentals_4_ordered_types()
     typedef IntervalMap<T,U> IntervalMapT;
     typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMapT::size_type       size_T;
-    typedef typename IntervalMapT::difference_type diff_T;
 
     // ordered types is the largest set of instance types.
     // Because we can not generate values via incrementation for e.g. string,
@@ -306,9 +305,7 @@ template
 void interval_map_distinct_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMap<T,U>::size_type       size_T;
-    typedef typename IntervalMap<T,U>::difference_type diff_T;
     T v1 = make<T>(1);
     T v3 = make<T>(3);
     T v5 = make<T>(5);
@@ -343,7 +340,6 @@ void interval_map_distinct_4_bicremental_continuous_types()
 #ifndef BOOST_ICL_USE_STATIC_BOUNDED_INTERVALS
 
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMapT::size_type       size_T;
     typedef typename IntervalMapT::difference_type diff_T;
     T v1 = make<T>(1);
@@ -402,7 +398,6 @@ void interval_map_isolate_4_bicremental_continuous_types()
     typedef IntervalMap<T,U> IntervalMapT;
     typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMapT::size_type       size_T;
-    typedef typename IntervalMapT::difference_type diff_T;
 
     T v0 = make<T>(0);
     T v2 = make<T>(2);
@@ -457,7 +452,6 @@ template
 void interval_map_contains_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMapT::set_type IntervalSetT;
 
     IntervalMapT itv_map;
@@ -503,7 +497,6 @@ template
 void interval_map_contains_key_objects_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMapT::set_type IntervalSetT;
     IntervalMapT itv_map;
 
@@ -545,7 +538,6 @@ template
 void interval_map_operators_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     T v0 = make<T>(0);
     T v1 = make<T>(1);
     T v3 = make<T>(3);
@@ -898,7 +890,6 @@ template
 void interval_map_flip_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef IntervalMapT IMap;
 
     IntervalMapT set_a;
@@ -1127,12 +1118,7 @@ template
 void interval_map_find_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type  IntervalT;
     typedef typename IntervalMapT::const_iterator c_iterator;
-
-    //CL typename IntervalMapT::interval_mapping_type val_pair1 = IDv(6,9,1);
-    //std::pair<const IntervalT, U> val_pair2 = IDv(3,5,3);
-    //mapping_pair<T,U> map_pair = K_v(4,3);
 
     IntervalMapT map_a;
     map_a.add(CDv(1,3,1)).add(IDv(8,9,1)).add(IIv(6,11,3));
@@ -1251,10 +1237,6 @@ void interval_map_range_4_bicremental_types()
     typedef typename IntervalMapT::interval_type  IntervalT;
     typedef typename IntervalMapT::const_iterator c_iterator;
 
-    //CL typename IntervalMapT::interval_mapping_type val_pair1 = IDv(6,9,1);
-    //std::pair<const IntervalT, U> val_pair2 = IDv(3,5,3);
-    //mapping_pair<T,U> map_pair = K_v(4,3);
-
     IntervalMapT map_a;
     map_a.add(CDv(1,3,1)).add(IDv(8,9,1)).add(IIv(6,11,3));
     // {(1  3)    [6  8)[8 9)[9  11)
@@ -1290,11 +1272,6 @@ template
 void interval_map_set_4_bicremental_types()
 {
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
-
-    //CL typename IntervalMapT::interval_mapping_type val_pair1 = IDv(6,9,1);
-    //std::pair<const IntervalT, U> val_pair2 = IDv(3,5,3);
-    //mapping_pair<T,U> map_pair = K_v(4,3);
 
     IntervalMapT map_a;
     map_a.add(CDv(1,3,1)).add(IDv(8,9,1)).add(IIv(6,11,3));
@@ -1317,10 +1294,7 @@ template
 void interval_map_inclusion_compare_4_bicremental_types()
 {
     typedef IntervalMap<T,U,Trt> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
     typedef typename IntervalMap<T,U,Trt>::set_type IntervalSetT;
-    typedef icl::map<T,U,Trt> MapT;
-    typedef std::set<T> SetT;
 
     IntervalMapT itv_map_sub_a, itv_map_a, itv_map_a2, itv_map_super_a,
                  itv_map_b, itv_map_c;
@@ -1429,8 +1403,6 @@ template
 void interval_map_element_iter_4_discrete_types()
 {
     typedef IntervalMap<T,U,Trt> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
-    typedef typename IntervalMapT::element_iterator ReptatorT;
     typedef std::vector<std::pair<T,U> > VectorT;
 
     IntervalMapT map_a;
@@ -1475,11 +1447,6 @@ void interval_map_intersects_4_bicremental_types()
 {
     // Test of intersects and disjoint for domain_type and interval_type.
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
-
-    //CL typename IntervalMapT::interval_mapping_type val_pair1 = IDv(6,9,1);
-    //std::pair<const IntervalT, U> val_pair2 = IDv(3,5,3);
-    //mapping_pair<T,U> map_pair = K_v(4,3);
 
     IntervalMapT map_a;
     map_a.add(CDv(1,3,1)).add(IDv(8,9,1)).add(IIv(6,11,3));
@@ -1528,7 +1495,6 @@ void interval_map_move_4_discrete_types()
 {
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     typedef IntervalMap<T,U> IntervalMapT;
-    typedef typename IntervalMapT::interval_type   IntervalT;
 
     IntervalMapT map_A(boost::move(IntervalMapT(IDv(0,4,2))));
     IntervalMapT map_B(boost::move(IntervalMapT(IDv(0,2,1)).add(IDv(2,4,1)).add(IDv(0,4,1))));
