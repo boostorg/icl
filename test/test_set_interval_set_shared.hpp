@@ -18,8 +18,6 @@ void make_3_interval_sets_and_derivatives_1
                     typename ICL_PORT_msvc_7_1_IntervalSet(T)::segment_type& segm_d,
                     typename ICL_PORT_msvc_7_1_IntervalSet(T)::element_type& elem_e)
 {
-    typedef IntervalSet<T> IntervalSetT;
-
     segm_d = I_D(6,9);
     elem_e = MK_v(5);
 

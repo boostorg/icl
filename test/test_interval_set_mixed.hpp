@@ -11,8 +11,6 @@ Copyright (c) 2008-2009: Joachim Faulhaber
 template <class T>
 void interval_set_mixed_ctor_4_ordered_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     T v0 = boost::icl::identity_element<T>::value();
 
     split_interval_set<T>    split_set(v0);
@@ -26,8 +24,6 @@ void interval_set_mixed_ctor_4_ordered_types()
 template <class T>
 void interval_set_mixed_equal_4_ordered_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     T v0 = boost::icl::identity_element<T>::value();
 
     split_interval_set<T>    split_empty, split_single(v0);
@@ -92,8 +88,6 @@ void interval_set_mixed_equal_4_ordered_types()
 template <class T>
 void interval_set_mixed_assign_4_ordered_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     T v0 = boost::icl::identity_element<T>::value();
     T v1 = unit_element<T>::value();
 
@@ -237,8 +231,6 @@ void interval_set_mixed_equal_4_bicremental_types()
 template <class T>
 void interval_set_mixed_contains_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     split_interval_set<T> split_set;
     split_set.add(I_D(0,4)).add(I_D(4,8));
     BOOST_CHECK_EQUAL( icl::contains(split_set, MK_v(4)), true );
@@ -777,8 +769,6 @@ void interval_set_mixed_disjoint_4_bicremental_types()
 template <class T>
 void interval_set_mixed_infix_plus_overload_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     interval_set<T>          join_a;
     separate_interval_set<T> sep_a;
     split_interval_set<T>    split_a;
@@ -794,8 +784,6 @@ void interval_set_mixed_infix_plus_overload_4_bicremental_types()
 
 template <class T> void interval_set_mixed_infix_pipe_overload_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     interval_set<T>          join_a;
     separate_interval_set<T> sep_a;
     split_interval_set<T>    split_a;
@@ -812,8 +800,6 @@ template <class T> void interval_set_mixed_infix_pipe_overload_4_bicremental_typ
 template <class T>
 void interval_set_mixed_infix_minus_overload_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     interval_set<T>          join_a,  join_b;
     separate_interval_set<T> sep_a,   sep_b;
     split_interval_set<T>    split_a, split_b;
@@ -833,8 +819,6 @@ void interval_set_mixed_infix_minus_overload_4_bicremental_types()
 
 template <class T> void interval_set_mixed_infix_et_overload_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     interval_set<T>          join_a;
     separate_interval_set<T> sep_a;
     split_interval_set<T>    split_a;
@@ -850,8 +834,6 @@ template <class T> void interval_set_mixed_infix_et_overload_4_bicremental_types
 
 template <class T> void interval_set_mixed_infix_caret_overload_4_bicremental_types()
 {
-    typedef interval_set<T> IntervalSetT;
-
     interval_set<T>          join_a;
     separate_interval_set<T> sep_a;
     split_interval_set<T>    split_a;

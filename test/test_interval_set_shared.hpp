@@ -16,7 +16,6 @@ void interval_set_fundamentals_4_ordered_types()
     typedef IntervalSet<T> IntervalSetT;
     typedef typename IntervalSetT::interval_type IntervalT;
     typedef typename IntervalSet<T>::size_type       size_T;
-    //CL typedef typename IntervalSet<T>::difference_type diff_T;
 
     // ordered types is the largest set of instance types.
     // Because we can not generate values via incrementation for e.g. string,
@@ -234,16 +233,13 @@ void interval_set_add_sub_4_bicremental_types()
 template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_distinct_4_bicremental_types()
 {
-    typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
     typedef typename IntervalSet<T>::size_type       size_T;
-    //CL typedef typename IntervalSet<T>::difference_type diff_T;
+
     T v1 = make<T>(1);
     T v3 = make<T>(3);
     T v5 = make<T>(5);
 
     size_T s3 = make<size_T>(3);
-
 
     IntervalSet<T> is_1_3_5;
     is_1_3_5.add(v1).add(v3).add(v5);
@@ -299,7 +295,6 @@ void interval_set_isolate_4_bicremental_continuous_types()
     typedef IntervalSet<T> IntervalSetT;
     typedef typename IntervalSetT::interval_type IntervalT;
     typedef typename IntervalSet<T>::size_type       size_T;
-    typedef typename IntervalSet<T>::difference_type diff_T;
 
     T v0 = make<T>(0);
     T v2 = make<T>(2);
@@ -340,8 +335,6 @@ void interval_set_isolate_4_bicremental_continuous_types()
 template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_element_compare_4_bicremental_types()
 {
-    typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
     typedef IntervalSet<T> ISet;
 
     BOOST_CHECK_EQUAL( is_element_equal( ISet(),         ISet()),         true );
@@ -529,7 +522,6 @@ template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_flip_4_bicremental_types()
 {
     typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
     typedef IntervalSetT ISet;
 
     IntervalSetT set_a, set_b, lhs, rhs;
@@ -661,7 +653,6 @@ template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_find_4_bicremental_types()
 {
     typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
     typedef typename IntervalSetT::const_iterator c_iterator;
 
     IntervalSetT set_a;
@@ -707,7 +698,6 @@ void interval_set_intersects_4_bicremental_types()
 {
     typedef IntervalSet<T> IntervalSetT;
     typedef typename IntervalSetT::interval_type IntervalT;
-    //CL typedef typename IntervalSetT::key_type      KeyT;
 
     IntervalT between = I_D(3,5);
 
@@ -740,8 +730,6 @@ template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_range_4_discrete_types()
 {
     typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
-    //CL typedef typename IntervalSetT::key_type      KeyT;
 
     IntervalSetT set_a;
     set_a.add(C_D(1,3)).add(I_I(6,11));
@@ -758,7 +746,6 @@ void interval_bitset_find_4_integral_types()
 {
     typedef IntervalSet<T> IntervalSetT;
     typedef typename IntervalSetT::interval_type IntervalT;
-    //CL typedef typename IntervalSetT::bitset_type BitsT;
 
     IntervalT itv = I_D(3,5);
 
@@ -788,7 +775,6 @@ template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
 void interval_set_element_iter_4_discrete_types()
 {
     typedef IntervalSet<T> IntervalSetT;
-    //CL typedef typename IntervalSetT::interval_type IntervalT;
     typedef std::vector<T> VectorT;
 
     IntervalSetT set_a;
