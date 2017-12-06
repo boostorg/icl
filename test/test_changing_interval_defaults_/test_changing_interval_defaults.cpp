@@ -45,7 +45,6 @@ BOOST_AUTO_TEST_CASE(test_intervals_4_changed_lib_defaults)
 {
     typedef int T;
     typedef int U;
-    typedef interval_map<T,U, total_absorber> IntervalMapT;
 
     //const bool xx = is_same< typename icl::map<int,int>::codomain_type,
     //    typename codomain_type_of<icl::map<int,int> >::type >::value;
