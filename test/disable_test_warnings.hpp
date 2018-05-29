@@ -10,6 +10,7 @@ Copyright (c) 2008-2009: Joachim Faulhaber
 
 #include <boost/icl/detail/boost_config.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/test/detail/suppress_warnings.hpp>
 
 #ifdef BOOST_MSVC             // These warnings are disabled permanently for tests.
 #pragma warning(disable:4996) // Function call with parameters that may be unsafe
