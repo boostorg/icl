@@ -166,8 +166,11 @@ BOOST_AUTO_TEST_CASE(test_span_and_hull)
     cl_I_int span_1_2 = span< cl_I_int >(1,2);
     cl_I_int span_2_1 = span< cl_I_int >(2,1);
     BOOST_CHECK_EQUAL(span_1_2, span_2_1);
+    BOOST_CHECK_EQUAL(hull< cl_I_int >(1,2), hull< cl_I_int >(2,1));
 
-    BOOST_CHECK_EQUAL(hull< cl_I_int >(1,2), hull< cl_I_int >(1,2));
-    BOOST_CHECK_EQUAL( hull< right_open_interval<int> >(-1,2)
-                     , hull< right_open_interval<int> >(-1,2) );
+    BOOST_CHECK_EQUAL( span< right_open_interval<int> >(2,1)
+                     , construct< right_open_interval<int> >(1,2) );
+
+    BOOST_CHECK_EQUAL( hull< right_open_interval<int> >(2,1)
+                     , construct< right_open_interval<int> >(1,3) );
 }
