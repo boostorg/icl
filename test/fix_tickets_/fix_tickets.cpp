@@ -15,6 +15,8 @@ Copyright (c) 2011-2011: Joachim Faulhaber
 #include <boost/icl/separate_interval_set.hpp>
 #include <boost/icl/split_interval_set.hpp>
 
+#include <iostream>
+
 using namespace std;
 using namespace boost;
 using namespace unit_test;
@@ -173,4 +175,36 @@ BOOST_AUTO_TEST_CASE(test_span_and_hull)
 
     BOOST_CHECK_EQUAL( hull< right_open_interval<int> >(2,1)
                      , construct< right_open_interval<int> >(1,3) );
+}
+
+BOOST_AUTO_TEST_CASE(test_ticket_12872)
+{
+    boost::icl::split_interval_set<unsigned> ss
+        = boost::icl::split_interval_set<unsigned>();
+    std::vector<std::pair<unsigned, unsigned> > rs;
+    rs.push_back(make_pair(88, 96));
+    rs.push_back(make_pair(72, 96));
+    rs.push_back(make_pair(80, 96));
+    rs.push_back(make_pair(24, 64));
+    rs.push_back(make_pair(80, 96));
+    rs.push_back(make_pair(32, 72));
+    rs.push_back(make_pair(88, 96));
+    rs.push_back(make_pair(16, 56));
+	//    {{88, 96}, {72, 96}, {80, 96}, {24, 64}, {80, 96}, {32, 72},
+	//     {88, 96}, {16, 56}};
+
+    for(int i=0; i < rs.size(); i++) {
+        ss.add( boost::icl::interval<unsigned>::right_open(rs[i].first, rs[i].second) );
+    }
+
+    boost::icl::split_interval_map<unsigned, unsigned> im
+        = boost::icl::split_interval_map<unsigned, unsigned>();
+    for(int i=0; i < rs.size(); i++) {
+        im.add( make_pair( boost::icl::interval<unsigned>::right_open(rs[i].first, rs[i].second), 1 ) );
+    }
+
+    BOOST_CHECK_EQUAL(interval_count(ss), interval_count(im));
+    BOOST_CHECK_EQUAL(size(ss), size(im));
+    BOOST_CHECK_EQUAL(size(ss), size(im));
+    BOOST_CHECK_EQUAL(hull(ss), hull(im));
 }
