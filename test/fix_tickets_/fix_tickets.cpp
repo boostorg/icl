@@ -204,7 +204,6 @@ BOOST_AUTO_TEST_CASE(test_ticket_12872)
     }
 
     BOOST_CHECK_EQUAL(interval_count(ss), interval_count(im));
-    BOOST_CHECK_EQUAL(size(ss), size(im));
-    BOOST_CHECK_EQUAL(size(ss), size(im));
+    BOOST_CHECK_EQUAL(icl::size(ss), icl::size(im));
     BOOST_CHECK_EQUAL(hull(ss), hull(im));
 }
