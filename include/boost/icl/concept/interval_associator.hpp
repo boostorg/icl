@@ -1166,7 +1166,7 @@ template<class Type>
 typename enable_if
 <mpl::and_< is_interval_container<Type>
           , mpl::not_<is_continuous_interval<typename Type::interval_type> > >,
-iterator_range<typename Type::element_iterator>>::type
+iterator_range<typename Type::element_iterator> >::type
 elements(Type& object)
 {
     return
@@ -1178,7 +1178,7 @@ template<class Type>
 typename enable_if
 <mpl::and_< is_interval_container<Type>
           , mpl::not_<is_continuous_interval<typename Type::interval_type> > >,
-iterator_range<typename Type::element_const_iterator>>::type
+iterator_range<typename Type::element_const_iterator> >::type
 elements(Type const& object)
 {
     return
