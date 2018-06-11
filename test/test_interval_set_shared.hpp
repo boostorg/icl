@@ -8,6 +8,7 @@ Copyright (c) 2008-2010: Joachim Faulhaber
 #ifndef LIBS_ICL_TEST_TEST_INTERVAL_SET_SHARED_HPP_JOFA_080920
 #define LIBS_ICL_TEST_TEST_INTERVAL_SET_SHARED_HPP_JOFA_080920
 
+#include <boost/range/algorithm.hpp>
 #include "portability.hpp"
 
 template <ICL_IntervalSet_TEMPLATE(_T) IntervalSet, class T>
@@ -785,6 +786,7 @@ void interval_set_element_iter_4_discrete_types()
     cev[0]=MK_v(7);cev[1]=MK_v(6);cev[2]=MK_v(3);cev[3]=MK_v(2);cev[4]=MK_v(1);
 
     VectorT dest;
+    // element iteration -----------------------------------------------------
     std::copy(elements_begin(set_a), elements_end(set_a), std::back_inserter(dest));
     BOOST_CHECK_EQUAL( vec == dest, true );
 
@@ -799,6 +801,15 @@ void interval_set_element_iter_4_discrete_types()
     dest.clear();
     std::reverse_copy(elements_rbegin(set_a), elements_rend(set_a), std::back_inserter(dest));
     BOOST_CHECK_EQUAL( vec == dest, true );
+
+    // range based element iteration -----------------------------------------
+    dest.clear();
+    boost::copy(elements(set_a), std::back_inserter(dest));
+    BOOST_CHECK( vec == dest );
+
+    dest.clear();
+    boost::reverse_copy(elements(set_a), std::back_inserter(dest));
+    BOOST_CHECK( cev == dest );
 }
 
 
