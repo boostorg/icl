@@ -218,4 +218,14 @@ BOOST_AUTO_TEST_CASE(test_ticket_12872)
     BOOST_CHECK_EQUAL(hull(ss), hull(im));
 }
 
+BOOST_AUTO_TEST_CASE(test_ticket_12926)
+{
+    boost::icl::interval_set<int> a;
+    a.insert(boost::icl::interval<int>::right_open(-100, 100));
+    a.insert(-50);
+        
+    BOOST_CHECK_EQUAL(a.size(), 200);
+}
+
+
 
