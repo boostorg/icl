@@ -91,6 +91,13 @@ BOOST_AUTO_TEST_CASE(ticket_6095_Marvin_Sielenkemper_totalRangeTest)
     BOOST_CHECK_EQUAL(intervals.iterative_size(), 3);
 }
 
+BOOST_AUTO_TEST_CASE(test_ticket_7871)
+{
+    boost::icl::split_interval_map <int, int> a, b;
+    a = b;        
+    BOOST_CHECK_EQUAL(a, b);
+}
+
 //------------------------------------------------------------------------------
 // Ticket #11308 Stephen Hewitt
 //------------------------------------------------------------------------------
@@ -226,6 +233,4 @@ BOOST_AUTO_TEST_CASE(test_ticket_12926)
         
     BOOST_CHECK_EQUAL(a.size(), 200);
 }
-
-
 
