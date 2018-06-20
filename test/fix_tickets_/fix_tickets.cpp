@@ -91,6 +91,13 @@ BOOST_AUTO_TEST_CASE(ticket_6095_Marvin_Sielenkemper_totalRangeTest)
     BOOST_CHECK_EQUAL(intervals.iterative_size(), 3);
 }
 
+BOOST_AUTO_TEST_CASE(test_ticket_7871)
+{
+    boost::icl::split_interval_map <int, int> a, b;
+    a = b;        
+    BOOST_CHECK_EQUAL(a, b);
+}
+
 //------------------------------------------------------------------------------
 // Ticket #11308 Stephen Hewitt
 //------------------------------------------------------------------------------
@@ -177,6 +184,16 @@ BOOST_AUTO_TEST_CASE(test_span_and_hull)
                      , construct< right_open_interval<int> >(1,3) );
 }
 
+BOOST_AUTO_TEST_CASE(test_ticket_11942)
+{
+    boost::icl::split_interval_set<int> intervals;
+    intervals.insert(boost::icl::discrete_interval<int>(1, 2));
+    intervals.insert(boost::icl::discrete_interval<int>(2, 3));
+    intervals.insert(boost::icl::discrete_interval<int>(0, 3));
+    
+    BOOST_CHECK_EQUAL(intervals.size(), 3);
+}
+
 BOOST_AUTO_TEST_CASE(test_ticket_12872)
 {
     boost::icl::split_interval_set<unsigned> ss
@@ -207,3 +224,13 @@ BOOST_AUTO_TEST_CASE(test_ticket_12872)
     BOOST_CHECK_EQUAL(icl::size(ss), icl::size(im));
     BOOST_CHECK_EQUAL(hull(ss), hull(im));
 }
+
+BOOST_AUTO_TEST_CASE(test_ticket_12926)
+{
+    boost::icl::interval_set<int> a;
+    a.insert(boost::icl::interval<int>::right_open(-100, 100));
+    a.insert(-50);
+        
+    BOOST_CHECK_EQUAL(a.size(), 200);
+}
+
