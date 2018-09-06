@@ -161,7 +161,7 @@ public:
     map()
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }
@@ -181,7 +181,7 @@ public:
         : base_type(src)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }
@@ -200,7 +200,7 @@ public:
         : base_type(boost::move(src))
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }

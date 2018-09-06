@@ -165,7 +165,7 @@ public:
     interval_base_set(const interval_base_set& src): _set(src._set)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
     }
 
 #   ifndef BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -177,7 +177,7 @@ public:
     interval_base_set(interval_base_set&& src): _set(boost::move(src._set))
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
     }
 
     /** Move assignment operator */

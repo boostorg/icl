@@ -43,7 +43,7 @@ public:
         , _bounds(interval_bounds::right_open())
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
     }
 
@@ -54,7 +54,7 @@ public:
         : _lwb(val), _upb(val), _bounds(interval_bounds::closed())
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
     }
 
@@ -65,7 +65,7 @@ public:
         : _lwb(low), _upb(up), _bounds(bounds)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
     }
 

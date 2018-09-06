@@ -201,7 +201,7 @@ public:
     interval_base_map()
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }
@@ -210,7 +210,7 @@ public:
     interval_base_map(const interval_base_map& src): _map(src._map)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }
@@ -224,7 +224,7 @@ public:
     interval_base_map(interval_base_map&& src): _map(boost::move(src._map))
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<CodomainT>));
         BOOST_CONCEPT_ASSERT((EqualComparableConcept<CodomainT>));
     }

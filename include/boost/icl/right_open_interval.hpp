@@ -36,7 +36,7 @@ public:
         : _lwb(identity_element<DomainT>::value()), _upb(identity_element<DomainT>::value()) 
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
     }
 
     //NOTE: Compiler generated copy constructor is used
@@ -46,7 +46,7 @@ public:
         : _lwb(val), _upb(icl::successor<DomainT,domain_compare>::apply(val))
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         // Only for discrete types this ctor creates an interval containing 
         // a single element only.
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
@@ -57,7 +57,7 @@ public:
         _lwb(low), _upb(up)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        ////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
     }
 
     domain_type lower()const{ return _lwb; }

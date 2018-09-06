@@ -34,7 +34,7 @@ public:
         : _lwb(unit_element<DomainT>::value()), _upb(identity_element<DomainT>::value()) 
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        //////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_STATIC_ASSERT((icl::is_discrete<DomainT>::value));
     }
 
@@ -45,7 +45,7 @@ public:
         : _lwb(val), _upb(val)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        //////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
         BOOST_STATIC_ASSERT((!icl::is_continuous<DomainT>::value));
     }
 
@@ -54,7 +54,7 @@ public:
         _lwb(low), _upb(up)
     {
         BOOST_CONCEPT_ASSERT((DefaultConstructibleConcept<DomainT>));
-        BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
+        //////BOOST_CONCEPT_ASSERT((LessThanComparableConcept<DomainT>));
     }
 
     DomainT lower()const{ return _lwb; }
