@@ -33,6 +33,14 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 namespace boost{namespace icl
 {
 
+template<class Type>
+typename boost::enable_if<is_interval<Type>, bool>::type
+lower_less_equal(const Type& left, const Type& right);
+
+template<class Type>
+typename boost::enable_if<is_interval<Type>, bool>::type
+upper_less_equal(const Type& left, const Type& right);
+
 //==============================================================================
 //= Ordering
 //==============================================================================
