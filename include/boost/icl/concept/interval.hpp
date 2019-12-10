@@ -29,6 +29,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 #include <boost/icl/interval_traits.hpp>
 #include <boost/icl/dynamic_interval_traits.hpp>
 
+#include <algorithm>
 
 namespace boost{namespace icl
 {
