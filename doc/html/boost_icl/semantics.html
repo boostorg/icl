@@ -78,14 +78,14 @@
       </h5>
 <p>
         On all set and map containers of the icl, there is an <code class="computeroutput"><span class="keyword">operator</span>
-        <span class="special">&lt;</span></code> that implements a <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html" target="_top">strict
+        <span class="special">&lt;</span></code> that implements a <a href="https://boost.org/sgi/stl/StrictWeakOrdering.html" target="_top">strict
         weak ordering</a>.
       </p>
 <p>
         The semantics of <code class="computeroutput"><span class="keyword">operator</span> <span class="special">&lt;</span></code>
-        is the same as for an stl's <a href="http://www.sgi.com/tech/stl/SortedAssociativeContainer.html" target="_top">SortedAssociativeContainer</a>,
-        specifically <a href="http://www.sgi.com/tech/stl/set.html" target="_top">stl::set</a>
-        and <a href="http://www.sgi.com/tech/stl/map.html" target="_top">stl::map</a>: 
+        is the same as for an stl's <a href="https://boost.org/sgi/stl/SortedAssociativeContainer.html" target="_top">SortedAssociativeContainer</a>,
+        specifically <a href="https://boost.org/sgi/stl/set.html" target="_top">stl::set</a>
+        and <a href="https://boost.org/sgi/stl/Map.html" target="_top">stl::map</a>: 
 </p>
 <pre class="programlisting"><span class="identifier">Irreflexivity</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">,&lt;</span> <span class="special">&gt;</span> <span class="special">:</span> <span class="identifier">T</span> <span class="identifier">a</span><span class="special">;</span>     <span class="special">!(</span><span class="identifier">a</span><span class="special">&lt;</span><span class="identifier">a</span><span class="special">)</span>
 <span class="identifier">Asymmetry</span><span class="special">&lt;</span><span class="identifier">T</span><span class="special">,&lt;</span> <span class="special">&gt;</span>     <span class="special">:</span> <span class="identifier">T</span> <span class="identifier">a</span><span class="special">,</span><span class="identifier">b</span><span class="special">;</span>   <span class="identifier">a</span><span class="special">&lt;</span><span class="identifier">b</span> <span class="identifier">implies</span> <span class="special">!(</span><span class="identifier">b</span><span class="special">&lt;</span><span class="identifier">a</span><span class="special">)</span>
