@@ -104,7 +104,7 @@
     <span class="comment">// A party is an interval map that maps time intervals to sets of guests
 </span>    <span class="identifier">interval_map</span><span class="special">&lt;</span><span class="identifier">ptime</span><span class="special">,</span> <span class="identifier">GuestSetT</span><span class="special">&gt;</span> <span class="identifier">party</span><span class="special">;</span>
 
-    <span class="identifier">party</span><span class="special">.</span><span class="identifier">add</span><span class="special">(</span> <span class="comment">// add and element
+    <span class="identifier">party</span><span class="special">.</span><span class="identifier">add</span><span class="special">(</span> <span class="comment">// add an element
 </span>      <span class="identifier">make_pair</span><span class="special">(</span> 
         <span class="identifier">interval</span><span class="special">&lt;</span><span class="identifier">ptime</span><span class="special">&gt;::</span><span class="identifier">right_open</span><span class="special">(</span>
           <span class="identifier">time_from_string</span><span class="special">(</span><span class="string">"2008-05-20 19:30"</span><span class="special">),</span> 
@@ -174,7 +174,7 @@
 <p>
           We are introducing <code class="computeroutput"><a class="link" href="../../boost/icl/interval_map.html" title="Class template interval_map">interval_maps</a></code>
           using an <span class="emphasis"><em>interval map <span class="emphasis"><em><span class="bold"><strong>of sets
-          of strings</strong></span></em></span></em></span>, because of it's didactic advantages.
+          of strings</strong></span></em></span></em></span>, because of its didactic advantages.
           The party example is used to give an immediate access to the basic ideas
           of interval maps and <span class="emphasis"><em>aggregate on overlap</em></span>. For real
           world applications, an interval_map of sets is not necessarily recommended.
