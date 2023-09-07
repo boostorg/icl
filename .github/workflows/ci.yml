@@ -177,7 +177,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "TOOLSET=clang CXXSTD=03,11,14,1z Job 5"
+          - name: "TOOLSET=clang CXXSTD=11,14,1z Job 5"
             buildtype: "boost"
             packages: ""
             os: "macos-11"
@@ -187,7 +187,7 @@ jobs:
             llvm_ver: ""
             xcode_version: 11.7
             toolset: "clang"
-            cxxstd: "03,11,14,1z"
+            cxxstd: "11,14,1z"
 
     runs-on: ${{ matrix.os }}
 
