@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "TOOLSET=gcc CXXSTD=03,11 Job 0"
+          - name: "TOOLSET=gcc CXXSTD=11 Job 0"
             buildtype: "boost"
             packages: ""
             packages_to_remove: ""
@@ -28,7 +28,7 @@ jobs:
             llvm_os: ""
             llvm_ver: ""
             toolset: "gcc"
-            cxxstd: "03,11"
+            cxxstd: "11"
           - name: "TOOLSET=gcc-5 CXXSTD=03,11,14,1z Job 1"
             buildtype: "boost"
             packages: "g++-5"

@@ -14,7 +14,7 @@ windowsglobalimage="cppalliance/dronevs2019"
 
 def main(ctx):
   return [
-  linux_cxx("TOOLSET=gcc CXXSTD=03,11 Job 0", "g++", packages="", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'TOOLSET': 'gcc', 'CXXSTD': '03,11', 'DRONE_JOB_UUID': 'b6589fc6ab'}, globalenv=globalenv),
+  linux_cxx("TOOLSET=gcc CXXSTD=11 Job 0", "g++", packages="", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'TOOLSET': 'gcc', 'CXXSTD': '11', 'DRONE_JOB_UUID': 'b6589fc6ab'}, globalenv=globalenv),
   linux_cxx("TOOLSET=gcc-5 CXXSTD=03,11,14,1z Job 1", "g++-5", packages="g++-5", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'TOOLSET': 'gcc-5', 'CXXSTD': '03,11,14,1z', 'DRONE_JOB_UUID': '356a192b79'}, globalenv=globalenv),
   linux_cxx("TOOLSET=gcc-6 CXXSTD=03,11,14,1z Job 2", "g++-6", packages="g++-6", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'TOOLSET': 'gcc-6', 'CXXSTD': '03,11,14,1z', 'DRONE_JOB_UUID': 'da4b9237ba'}, globalenv=globalenv),
   linux_cxx("TOOLSET=gcc-7 CXXSTD=03,11,14,17 Job 3", "g++-7", packages="g++-7", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'TOOLSET': 'gcc-7', 'CXXSTD': '03,11,14,17', 'DRONE_JOB_UUID': '77de68daec'}, globalenv=globalenv),
