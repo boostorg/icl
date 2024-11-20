@@ -269,16 +269,21 @@ private:
 public:
     element_iterator()
         : _saltator(identity_element<segment_iterator>::value())
-        , _reptator(identity_element<domain_difference_type>::value()){}
+        , _reptator(identity_element<domain_difference_type>::value())
+        , _inter_pos(identity_element<domain_type>::value()) {}
 
     explicit element_iterator(segment_iterator jumper)
-        : _saltator(jumper), _reptator(identity_element<domain_difference_type>::value()) {}
+        : _saltator(jumper)
+        , _reptator(identity_element<domain_difference_type>::value())
+        , _inter_pos(identity_element<domain_type>::value()) {}
 
     template <class SaltatorT>
     element_iterator
         ( element_iterator<SaltatorT> const& other
         , typename enable_if<boost::is_convertible<SaltatorT*,SegmentIteratorT*>, enabler>::type = enabler())
-        : _saltator(other._saltator), _reptator(other._reptator) {}
+        : _saltator(other._saltator)
+        , _reptator(other._reptator)
+        , _inter_pos(other._inter_pos) {}
 
 private:
     friend class boost::iterator_core_access;
