@@ -21,7 +21,7 @@ jobs:
             buildtype: "boost"
             packages: ""
             packages_to_remove: ""
-            os: "ubuntu-20.04"
+            os: "ubuntu-latest"
             container: "ubuntu:16.04"
             cxx: "g++"
             sources: ""
@@ -33,8 +33,8 @@ jobs:
             buildtype: "boost"
             packages: "g++-5"
             packages_to_remove: ""
-            os: "ubuntu-20.04"
-            container: "ubuntu:16.04"
+            os: "ubuntu-latest"
+            container: "ubuntu:18.04"
             cxx: "g++-5"
             sources: ""
             llvm_os: ""
@@ -45,8 +45,8 @@ jobs:
             buildtype: "boost"
             packages: "g++-6"
             packages_to_remove: ""
-            os: "ubuntu-20.04"
-            container: "ubuntu:16.04"
+            os: "ubuntu-latest"
+            container: "ubuntu:18.04"
             cxx: "g++-6"
             sources: ""
             llvm_os: ""
@@ -57,8 +57,8 @@ jobs:
             buildtype: "boost"
             packages: "g++-7"
             packages_to_remove: ""
-            os: "ubuntu-20.04"
-            container: "ubuntu:16.04"
+            os: "ubuntu-latest"
+            container: "ubuntu:18.04"
             cxx: "g++-7"
             sources: ""
             llvm_os: ""
@@ -67,10 +67,10 @@ jobs:
             cxxstd: "11,14,17"
           - name: "TOOLSET=clang CXXSTD=11,14,1z Job 4"
             buildtype: "boost"
-            packages: "libstdc++-4.9-dev clang"
+            packages: "clang"
             packages_to_remove: ""
-            os: "ubuntu-20.04"
-            container: "ubuntu:16.04"
+            os: "ubuntu-latest"
+            container: "ubuntu:18.04"
             cxx: "clang++"
             sources: ""
             llvm_os: ""
@@ -79,22 +79,29 @@ jobs:
             cxxstd: "11,14,1z"
 
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
+    container:
+      image: ${{matrix.container}}
+      volumes:
+        - /node20217:/node20217:rw,rshared
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20217:/__e/node20:ro,rshared' || ' ' }}
 
     steps:
-      - name: Check if running in container
-        if: matrix.container != ''
-        run: echo "GHA_CONTAINER=${{ matrix.container }}" >> $GITHUB_ENV
-      - name: If running in container, upgrade packages
-        if: matrix.container != ''
+      - name: Setup container environment
+        if: matrix.container
         run: |
-            apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https make apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf automake g++ libc++-helpers python ruby cpio gcc-multilib g++-multilib pkgconf python3 ccache libpython-dev
-            sudo apt-add-repository ppa:git-core/ppa
-            sudo apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git
-            python_version=$(python3 -c 'import sys; print("{0.major}.{0.minor}".format(sys.version_info))')
-            sudo wget https://bootstrap.pypa.io/pip/$python_version/get-pip.py
-            sudo python3 get-pip.py
-            sudo /usr/local/bin/pip install cmake
+          apt-get update
+          apt-get -y install sudo python3 git g++ curl xz-utils
+
+      - name: Install nodejs20glibc2.17
+        if: ${{ startsWith( matrix.container, 'ubuntu:1' ) }}
+        run: |
+          curl -LO https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz
+          tar -xf node-v20.9.0-linux-x64-glibc-217.tar.xz --strip-components 1 -C /node20217
+          ldd /__e/node20/bin/node
+
+      - name: Install packages
+        if: matrix.packages
+        run: sudo apt-get -y install ${{matrix.packages}}
 
       - uses: actions/checkout@v2
 
@@ -117,28 +124,6 @@ jobs:
           echo '==================================> PACKAGES'
           set -e
           if [ -n "$PACKAGES_TO_REMOVE" ]; then sudo apt-get purge -y $PACKAGES_TO_REMOVE; fi
-          echo ">>>>> APT: REPO.."
-          for i in {1..3}; do sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 2; done
-          
-          if test -n "${LLVM_OS}" ; then
-              wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-              if test -n "${LLVM_VER}" ; then
-                  sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ llvm-toolchain-${LLVM_OS}-${LLVM_VER} main"
-              else
-                  # Snapshot (i.e. trunk) build of clang
-                  sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ llvm-toolchain-${LLVM_OS} main"
-              fi
-          fi
-          echo ">>>>> APT: UPDATE.."
-          sudo -E apt-get -o Acquire::Retries=3 update
-          if test -n "${SOURCES}" ; then
-              echo ">>>>> APT: INSTALL SOURCES.."
-              for SOURCE in $SOURCES; do
-                  sudo -E apt-add-repository ppa:$SOURCE
-              done
-          fi
-          echo ">>>>> APT: INSTALL ${PACKAGES}.."
-          sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -y --no-install-suggests --no-install-recommends install ${PACKAGES}
 
           echo '==================================> INSTALL AND COMPILE'
           set -e
@@ -163,7 +148,7 @@ jobs:
           git submodule update --init libs/config
           git submodule update --init tools/boostdep
           cp -r $TRAVIS_BUILD_DIR/* libs/icl
-          python tools/boostdep/depinst/depinst.py icl
+          python3 tools/boostdep/depinst/depinst.py icl
           ./bootstrap.sh
           ./b2 headers
 
@@ -180,7 +165,7 @@ jobs:
           - name: "TOOLSET=clang CXXSTD=11,14,1z Job 5"
             buildtype: "boost"
             packages: ""
-            os: "macos-11"
+            os: "macos-latest"
             cxx: "clang++"
             sources: ""
             llvm_os: ""
@@ -193,12 +178,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Set DEVELOPER_DIR
-        if: matrix.xcode_version != ''
-        run: echo "DEVELOPER_DIR=/Applications/Xcode_${{ matrix.xcode_version }}.app/Contents/Developer" >> $GITHUB_ENV
-      - name: Test DEVELOPER_DIR
-        run: echo $DEVELOPER_DIR
 
       - name: "osx"
         shell: bash
@@ -241,7 +220,7 @@ jobs:
           git submodule update --init libs/config
           git submodule update --init tools/boostdep
           cp -r $TRAVIS_BUILD_DIR/* libs/icl
-          python tools/boostdep/depinst/depinst.py icl
+          python3 tools/boostdep/depinst/depinst.py icl
           ./bootstrap.sh
           ./b2 headers
 

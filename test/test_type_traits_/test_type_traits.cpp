@@ -7,7 +7,7 @@ Copyright (c) 2008-2009: Joachim Faulhaber
 +-----------------------------------------------------------------------------*/
 #define BOOST_TEST_MODULE icl::test_type_traits unit test
 
-#include <libs/icl/test/disable_test_warnings.hpp>
+#include <disable_test_warnings.hpp>
 #include <limits>
 #include <complex>
 #include <string>

@@ -6,7 +6,7 @@ Copyright (c) 2011-2011: Joachim Faulhaber
            http://www.boost.org/LICENSE_1_0.txt)
 +-----------------------------------------------------------------------------*/
 #define BOOST_TEST_MODULE icl::fix_icl_after_thread unit test
-#include <libs/icl/test/disable_test_warnings.hpp>
+#include <disable_test_warnings.hpp>
 #include "../unit_test_unwarned.hpp"
 
 // #include <boost/thread.hpp> MEMO: The problem occured when using thread.hpp
