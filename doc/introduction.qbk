@@ -122,7 +122,7 @@ sets appear in contiguous chunks: __itvs__. This is obviously the
 case in many problem domains, particularly in fields that deal with 
 computations related to date and time.
 
-[h4 Addabitlity and Subtractability]
+[h4 Addability and Subtractability]
 
 Unlike `std::sets` and `maps`, __itv_bsets__ and __itv_bmaps__ implement
 concept `Addable` and `Subtractable`. So __itv_bsets__ define an 
