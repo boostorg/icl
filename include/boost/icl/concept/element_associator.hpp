@@ -13,6 +13,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 #include <boost/icl/type_traits/is_key_container_of.hpp>
 #include <boost/icl/type_traits/is_combinable.hpp>
 #include <boost/icl/detail/subset_comparer.hpp>
+#include <boost/icl/detail/associated_value.hpp>
 #include <boost/icl/concept/element_set.hpp>
 #include <boost/icl/concept/element_map.hpp>
 
