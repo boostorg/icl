@@ -172,12 +172,19 @@ jobs:
           git submodule update --init tools/boostdep
           cp -r $TRAVIS_BUILD_DIR/* libs/icl
           python3 tools/boostdep/depinst/depinst.py icl
+          cat > ~/user-config.jam <<EOF
+          using $TOOLSET : : $CXX ;
+          EOF
           ./bootstrap.sh
           ./b2 headers
 
           echo '==================================> SCRIPT'
 
-          ./b2 -j 3 libs/icl/test toolset=$TOOLSET cxxstd=$CXXSTD
+          B2_FLAGS=""
+          if [ "${STDLIB:-}" = "libc++" ]; then
+            B2_FLAGS="$B2_FLAGS cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++"
+          fi
+          ./b2 -j 3 libs/icl/test toolset=$TOOLSET cxxstd=$CXXSTD $B2_FLAGS
 
           fi
   osx:
