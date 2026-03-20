@@ -183,7 +183,7 @@ jobs:
           EOF
           B2_FLAGS=""
           if [ "${STDLIB:-}" = "libc++" ]; then
-            B2_FLAGS="$B2_FLAGS cxxflags=-stdlib=libc++ cxxflags=-D_LIBCPP_ENABLE_LEGACY_TREE_LOWER_UPPER_BOUND linkflags=-stdlib=libc++"
+            B2_FLAGS="$B2_FLAGS cxxflags=-stdlib=libc++ linkflags=-stdlib=libc++"
           fi
           ./b2 -j 3 libs/icl/test toolset=$TOOLSET cxxstd=$CXXSTD $B2_FLAGS
 
