@@ -77,6 +77,19 @@ jobs:
             llvm_ver: ""
             toolset: "clang"
             cxxstd: "11,14,1z"
+          - name: "TOOLSET=clang-22 STDLIB=libc++-22 CXXSTD=11,14,17,20,23 Job 5"
+            buildtype: "boost"
+            packages: ""
+            packages_to_remove: ""
+            os: "ubuntu-latest"
+            container: "ubuntu:24.04"
+            cxx: "clang++-22"
+            sources: ""
+            llvm_os: "ubuntu"
+            llvm_ver: "22"
+            toolset: "clang"
+            cxxstd: "11,14,17,20,23"
+            stdlib: "libc++"
 
     runs-on: ${{ matrix.os }}
     container:
