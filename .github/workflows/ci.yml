@@ -79,7 +79,7 @@ jobs:
             cxxstd: "11,14,1z"
           - name: "TOOLSET=clang-22 STDLIB=libc++-22 CXXSTD=11,14,17,20,23 Job 5"
             buildtype: "boost"
-            packages: "clang-22 libc++-22-dev libc++abi-22-dev"
+            packages: ""
             packages_to_remove: ""
             os: "ubuntu-latest"
             container: "ubuntu:24.04"
@@ -115,6 +115,16 @@ jobs:
       - name: Install packages
         if: matrix.packages
         run: sudo apt-get -y install ${{matrix.packages}}
+
+      - name: Install LLVM repo packages
+        if: matrix.llvm_ver == '22'
+        run: |
+          apt-get update
+          apt-get -y install wget gnupg
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" > /etc/apt/sources.list.d/llvm.list
+          apt-get update
+          apt-get -y install clang-22 libc++-22-dev libc++abi-22-dev
 
       - uses: actions/checkout@v2
 
