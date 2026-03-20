@@ -40,18 +40,6 @@ struct assoc_container_adaptor: AssocContainer
 
     using AssocContainer::AssocContainer;
 
-    assoc_container_adaptor& operator=(const assoc_container_adaptor& src)
-    {
-        AssocContainer::operator=(src);
-        return *this;
-    }
-
-    assoc_container_adaptor& operator=(assoc_container_adaptor&& src)
-    {
-        AssocContainer::operator=(std::move(src));
-        return *this;
-    }
-
     size_type count(const key_type& key)
     {
         return AssocContainer::count(std::cref(key));
