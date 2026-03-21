@@ -111,7 +111,9 @@ public:
     void assign(const interval_base_set<SubType,DomainT,Compare,Interval,Alloc>& src)
     {
         this->clear();
-        this->_set.insert(src.begin(), src.end());
+        // https://github.com/boostorg/container/issues/334
+        auto& ncsrc = const_cast<interval_base_set<SubType,DomainT,Compare,Interval,Alloc>&>(src);
+        this->_set.insert(ncsrc.begin(), ncsrc.end());
     }
 
     /// Assignment operator for base type
