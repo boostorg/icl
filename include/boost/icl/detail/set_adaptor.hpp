@@ -22,8 +22,20 @@ namespace boost{namespace icl{namespace detail
 {
 
 template<class K, class Compare, class Allocator>
-using set_adaptor = assoc_container_adaptor<
+struct set_adaptor: assoc_container_adaptor<
+    ICL_IMPL_SPACE::set<K, transparent_compare<Compare>, Allocator>>
+{
+  // Boost.ICL assumes iterator is the same type as const_iterator, which is not
+  // guaranteed generally and is certainly not the case for boost::container::set.
+
+  using super = assoc_container_adaptor<
     ICL_IMPL_SPACE::set<K, transparent_compare<Compare>, Allocator>>;
+
+  using super::super;
+
+  using const_iterator = super::const_iterator;
+  using iterator = const_iterator;
+};
 
 }}} // namespace detail icl boost
 
