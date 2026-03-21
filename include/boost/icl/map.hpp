@@ -10,16 +10,8 @@ Copyright (c) 2007-2011: Joachim Faulhaber
 
 #include <boost/icl/impl_config.hpp>
 
-#if defined(ICL_USE_BOOST_MOVE_IMPLEMENTATION)
-#   include <boost/container/map.hpp>
-#   include <boost/container/set.hpp>
-#elif defined(ICL_USE_STD_IMPLEMENTATION)
-#   include <map>
-#   include <set>
-#else // Default for implementing containers
-#   include <map>
-#   include <set>
-#endif
+#include ICL_IMPL_PATH(map)
+#include ICL_IMPL_PATH(set)
 
 #include <string>
 #include <boost/call_traits.hpp>
