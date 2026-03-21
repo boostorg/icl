@@ -1247,7 +1247,13 @@ void interval_map_range_4_bicremental_types()
     //    [2        7) := itv
 
     IntervalT itv = I_D(2, 7);
+#if 0
+    // There does not seem to be a gurantee that 
+    // icl::find(map_a, itv) == map_a.lower_bound(itv); ask Joachim Faulhaber about it.
     c_iterator lwb1 = icl::find(map_a, itv);
+#else
+    c_iterator lwb1 = icl::lower_bound(map_a, itv);
+#endif
     c_iterator lwb2 = map_a.lower_bound(itv);
 
     BOOST_CHECK      ( lwb1 == lwb2 );
