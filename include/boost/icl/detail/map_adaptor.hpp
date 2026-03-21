@@ -6,7 +6,7 @@ Copyright (c) 2026: Joaquin M Lopez Munoz
            http://www.boost.org/LICENSE_1_0.txt)
 +-----------------------------------------------------------------------------*/
 #ifndef BOOST_ICL_DETAIL_MAP_ADAPTOR_HPP_JMLM_260321
-#define BOOST_ICL_DETAIL_AP_ADAPTOR_HPP_JMLM_260321
+#define BOOST_ICL_DETAIL_MAP_ADAPTOR_HPP_JMLM_260321
 
 #include <boost/icl/impl_config.hpp>
 #include <boost/icl/detail/assoc_container_adaptor.hpp>
