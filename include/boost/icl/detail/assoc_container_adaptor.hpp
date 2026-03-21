@@ -18,6 +18,8 @@ template<class Compare>
 struct transparent_compare: Compare
 {
     using is_transparent = void;
+
+    using Compare::Compare;
 };
 
 template<class AssocContainer>
