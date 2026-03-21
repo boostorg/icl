@@ -102,4 +102,3 @@ using map_adaptor = assoc_container_adaptor<Map<K, T, transparent_compare<Compar
 }}} // namespace detail icl boost
 
 #endif
-

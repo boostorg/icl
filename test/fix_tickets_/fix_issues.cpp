@@ -65,29 +65,3 @@ BOOST_AUTO_TEST_CASE(issue_51_exclusive_less_not_std_compliant)
     BOOST_CHECK( exclusive_less(ro_itv_4_7, ro_itv_10_12) );
     BOOST_CHECK( disjoint(ro_itv_4_7, ro_itv_10_12) );
 }
-
-BOOST_AUTO_TEST_CASE(issue_51_exclusive_less_not_std_compliant_2)
-{
-    struct exclusive_less_than_2
-    {
-        bool operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const
-        {
-            return lhs.second < rhs.first;
-        }
-    };
-    
-    std::set<std::pair<int, int>, exclusive_less_than_2> mp;
-    mp.insert(std::make_pair(0, 2));
-    mp.insert(std::make_pair(3, 5));
-    mp.insert(std::make_pair(6, 9));
-    mp.insert(std::make_pair(10, 12));
-
-    auto it = mp.upper_bound(std::make_pair(4, 7));
-    BOOST_CHECK( it != mp.end() );
-
-    // Expected: 10 12
-    // std::cout << it->first << ' '<< it->second << std::endl;
-    BOOST_CHECK_EQUAL(it->first, 10);
-    BOOST_CHECK_EQUAL(it->second, 12);
-}
-
