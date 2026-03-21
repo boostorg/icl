@@ -29,11 +29,11 @@ struct set_adaptor: assoc_container_adaptor<
   // guaranteed generally and is certainly not the case for boost::container::set.
 
   using super = assoc_container_adaptor<
-    ICL_IMPL_SPACE::set<K, transparent_compare<Compare>, Allocator>>;
+      ICL_IMPL_SPACE::set<K, transparent_compare<Compare>, Allocator>>;
 
   using super::super;
 
-  using const_iterator = super::const_iterator;
+  using const_iterator = typename super::const_iterator;
   using iterator = const_iterator;
 };
 
