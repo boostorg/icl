@@ -9,6 +9,7 @@ Copyright (c) 2026: Joaquin M Lopez Munoz
 #define BOOST_ICL_DETAIL_ASSOC_CONTAINER_ADAPTOR_HPP_JMLM_260320
 
 #include <boost/icl/impl_config.hpp>
+#include <type_traits>
 #include <utility>
 
 namespace boost{namespace icl{namespace detail
@@ -49,6 +50,10 @@ struct transparent_compare: Compare
 };
 
 template<class AssocContainer>
+using assoc_container_is_set = std::is_same<
+    typename AssocContainer::key_type, typename AssocContainer::value_type>;
+
+template<class AssocContainer>
 struct assoc_container_adaptor: AssocContainer
 {
     using key_type = typename AssocContainer::key_type;
@@ -69,14 +74,29 @@ struct assoc_container_adaptor: AssocContainer
         return AssocContainer::count(std::cref(key));
     }
 
+    template<
+        class IsSet = assoc_container_is_set<AssocContainer>,
+        typename std::enable_if<IsSet::value>::type* = nullptr>
     iterator find(const key_type& key)
     {
-        return AssocContainer::find(std::cref(key));
+        auto it = AssocContainer::lower_bound(std::cref(key));
+        return it == AssocContainer::end() || AssocContainer::key_comp()(key, *it)?
+            AssocContainer::end(): it;
+    }
+
+    template<
+        class IsSet = assoc_container_is_set<AssocContainer>,
+        typename std::enable_if<!IsSet::value>::type* = nullptr>
+    iterator find(const key_type& key)
+    {
+        auto it = AssocContainer::lower_bound(std::cref(key));
+        return it == AssocContainer::end() || AssocContainer::key_comp()(key, it->first)?
+            AssocContainer::end(): it;
     }
 
     const_iterator find(const key_type& key) const
     {
-        return AssocContainer::find(std::cref(key));
+        return const_cast<assoc_container_adaptor*>(this)->find(key);
     }
 
     std::pair<iterator, iterator> equal_range(const key_type& key)
