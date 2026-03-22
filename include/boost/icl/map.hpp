@@ -10,8 +10,8 @@ Copyright (c) 2007-2011: Joachim Faulhaber
 
 #include <boost/icl/impl_config.hpp>
 
-#include ICL_IMPL_PATH(map)
-#include ICL_IMPL_PATH(set)
+#include <boost/icl/detail/map_adaptor.hpp>
+#include <boost/icl/detail/set_adaptor.hpp>
 
 #include <string>
 #include <boost/call_traits.hpp>
@@ -81,14 +81,14 @@ template
     ICL_SECTION Section = ICL_SECTION_INSTANCE(icl::inter_section, CodomainT),
     ICL_ALLOC   Alloc   = std::allocator
 >
-class map: private ICL_IMPL_SPACE::map<DomainT, CodomainT, ICL_COMPARE_DOMAIN(Compare,DomainT),
+class map: private detail::map_adaptor<DomainT, CodomainT, ICL_COMPARE_DOMAIN(Compare,DomainT),
                                        Alloc<std::pair<const DomainT, CodomainT> > >
 {
 public:
     typedef Alloc<typename std::pair<const DomainT, CodomainT> >  allocator_type;
 
     typedef typename icl::map<DomainT,CodomainT,Traits, Compare,Combine,Section,Alloc> type;
-    typedef typename ICL_IMPL_SPACE::map<DomainT, CodomainT, ICL_COMPARE_DOMAIN(Compare,DomainT),
+    typedef typename detail::map_adaptor<DomainT, CodomainT, ICL_COMPARE_DOMAIN(Compare,DomainT),
                                          allocator_type>   base_type;
 
     typedef Traits traits;
@@ -115,8 +115,8 @@ public:
     typedef typename inverse<codomain_intersect>::type  inverse_codomain_intersect;
     typedef typename base_type::value_compare           value_compare;
 
-    typedef typename ICL_IMPL_SPACE::set<DomainT, domain_compare, Alloc<DomainT> > set_type;
-    typedef set_type                                       key_object_type;
+    typedef typename detail::set_adaptor<DomainT, domain_compare, Alloc<DomainT> > set_type;
+    typedef set_type                                    key_object_type;
 
 
     BOOST_STATIC_CONSTANT(bool, _total   = (Traits::is_total));
