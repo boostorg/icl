@@ -111,12 +111,7 @@ public:
     void assign(const interval_base_set<SubType,DomainT,Compare,Interval,Alloc>& src)
     {
         this->clear();
-#if defined(BOOST_ICL_USES_BOOST_CONTAINERS)
-        // https://github.com/boostorg/container/issues/334
-        for(const auto& x: src) this->_set.insert(x);
-#else
         this->_set.insert(src.begin(), src.end());
-#endif
     }
 
     /// Assignment operator for base type

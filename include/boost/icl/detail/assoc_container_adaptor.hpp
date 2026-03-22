@@ -19,7 +19,7 @@ namespace boost{namespace icl{namespace detail
 | order (SWO). This does not pose any problem with associative containers as   |
 | long as the intervals in the container are disjoint, since the induced order |
 | restricted to those is a SWO (indeed, a total order). A difficulty may arise |
-| when doing a lookup operation for an interval k which overlaps with          |
+| when doing a lookup operation for an interval k that overlaps with           |
 | E = elements(container), as the induced order over {k} U E may not be a SWO. |
 | All stdlib implementations support this case except libc++ v22 or higher:    |
 |   https://github.com/llvm/llvm-project/issues/183189                         |
