@@ -38,6 +38,10 @@ namespace boost{namespace icl{namespace detail
 | without het lookup. This circumvents libc++'s singular behavior except when  |
 | in C++11 mode: in this case, we use Boost.Container, which supports het      |
 | lookup even in C++11 (see impl_config.hpp).                                  |
+|                                                                              |
+| Additionally, Boost.ICL interval find functions are documented to return the |
+| _first_ eligible element, which is not guaranteed by std::{set|map}::find;   |
+| assoc_container_adaptor fixes that.
 +-----------------------------------------------------------------------------*/
 
 template<class Compare>
