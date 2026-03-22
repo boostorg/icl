@@ -40,11 +40,9 @@ Copyright (c) 2009-2011: Joachim Faulhaber
 
 #if defined(ICL_USE_BOOST_MOVE_IMPLEMENTATION) ||\
     (BOOST_CXX_VERSION < 201402L && defined(_LIBCPP_VERSION) && _LIBCPP_VERSION > 220000)
-#   define BOOST_ICL_USES_BOOST_CONTAINERS
 #   define ICL_IMPL_SPACE boost::container
 #   define ICL_IMPL_PATH(header) <boost/container/header.hpp>
 #else
-#   define BOOST_ICL_USES_STD_CONTAINERS
 #   define ICL_IMPL_SPACE std
 #   define ICL_IMPL_PATH(header) <header>
 #endif
