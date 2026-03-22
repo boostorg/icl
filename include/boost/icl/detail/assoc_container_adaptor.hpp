@@ -18,8 +18,9 @@ template<class Compare>
 struct transparent_compare: Compare
 {
     using is_transparent = void;
+    using super = Compare;
 
-    using Compare::Compare;
+    using super::super;
 };
 
 template<class AssocContainer>
@@ -27,6 +28,7 @@ struct assoc_container_adaptor: AssocContainer
 {
     using key_type = typename AssocContainer::key_type;
     using size_type = typename AssocContainer::size_type;
+    using key_compare = typename AssocContainer::key_compare::super;
     using iterator = typename AssocContainer::iterator;
     using const_iterator = typename AssocContainer::const_iterator;
 
