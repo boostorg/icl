@@ -14,6 +14,31 @@ Copyright (c) 2026: Joaquin M Lopez Munoz
 namespace boost{namespace icl{namespace detail
 {
 
+/*-----------------------------------------------------------------------------+
+| Interval comparison is generally a partial order rather than a strict weak   |
+| order (SWO). This does not pose any problem with associative containers as   |
+| long as the intervals in the container are disjoint, since the induced order |
+| restricted to those is a SWO (indeed, a total order). A difficulty may arise |
+| when doing a lookup operation for an interval k which overlaps with          |
+| E = elements(container), as the induced order over {k} U E may not be a SWO. |
+| All stdlib implementations support this case except libc++ v22 or higher:    |
+|   https://github.com/llvm/llvm-project/issues/183189                         |
+|   https://github.com/boostorg/icl/issues/51 .                                |
+| Whether libc++'s behavior is conformant or not is contested, see             |
+|   https://github.com/llvm/llvm-project/issues/187667 ,                       |
+| but, regardless, we can solve the problem by resorting to heterogeneous      |
+| lookup. When k is of a type other than key_type and the compare predicate is |
+| transparent, lookup operations on k are defined by the standard in terms of  |
+| elements being _partitioned_ by k, without any reference to SWO compliance.  |
+|                                                                              |
+| assoc_container_adaptor, in combination with transparent_compare, forces     |
+| lookup operations on the adapted container to be routed through its          |
+| heterogeneous lookup overloads, and does nothing for C++11 containers        |
+| without het lookup. This circumvents libc++'s singular behavior except when  |
+| in C++11 mode: in this case, we use Boost.Container, which supports het      |
+| lookup even in C++11 (see impl_config.hpp).                                  |
++-----------------------------------------------------------------------------*/
+
 template<class Compare>
 struct transparent_compare: Compare
 {

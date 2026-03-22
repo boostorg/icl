@@ -8,12 +8,11 @@ Copyright (c) 2026: Joaquin M Lopez Munoz
 #ifndef BOOST_ICL_DETAIL_MAP_ADAPTOR_HPP_JMLM_260321
 #define BOOST_ICL_DETAIL_MAP_ADAPTOR_HPP_JMLM_260321
 
-#include <boost/icl/impl_config.hpp>
 #include <boost/icl/detail/assoc_container_adaptor.hpp>
 
 #include ICL_IMPL_PATH(map)
 
-/* let boostdep know about this potential dependency */
+// let boostdep know about this potential dependency hidden by ICL_IMPL_PATH
 #if 0
 #include <boost/container/map.hpp>
 #endif
