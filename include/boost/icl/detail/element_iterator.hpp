@@ -13,6 +13,12 @@ Copyright (c) 2009-2009: Joachim Faulhaber
 #include <boost/icl/type_traits/succ_pred.hpp>
 #include <boost/icl/detail/mapped_reference.hpp>
 
+namespace boost{namespace movelib{
+
+template<class It> class reverse_iterator;
+
+}} // namespace movelib boost
+
 namespace boost{namespace icl
 {
 
@@ -59,6 +65,13 @@ template<class BaseIteratorT>
 struct is_reverse<std::reverse_iterator<BaseIteratorT> >
 { 
     typedef is_reverse<std::reverse_iterator<BaseIteratorT> > type; 
+    BOOST_STATIC_CONSTANT(bool, value = true);
+};
+
+template<class BaseIteratorT>
+struct is_reverse<boost::movelib::reverse_iterator<BaseIteratorT> >
+{ 
+    typedef is_reverse<boost::movelib::reverse_iterator<BaseIteratorT> > type; 
     BOOST_STATIC_CONSTANT(bool, value = true);
 };
 

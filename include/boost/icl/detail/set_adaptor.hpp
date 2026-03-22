@@ -27,7 +27,7 @@ struct set_adaptor: assoc_container_adaptor<
 {
     // Boost.ICL assumes set::iterator is the same type as set::const_iterator,
     // which is not guaranteed generally and is certainly not the case for
-    // boost::container::set.
+    // boost::container::set. We extend to reverse_iterator out of sympathy.
 
     using super = assoc_container_adaptor<
         ICL_IMPL_SPACE::set<K, transparent_compare<Compare>, Allocator>>;
@@ -36,6 +36,8 @@ struct set_adaptor: assoc_container_adaptor<
 
     using const_iterator = typename super::const_iterator;
     using iterator = const_iterator;
+    using const_reverse_iterator = typename super::const_reverse_iterator;
+    using reverse_iterator = const_reverse_iterator;
 };
 
 }}} // namespace detail icl boost
