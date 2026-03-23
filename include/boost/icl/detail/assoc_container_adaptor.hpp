@@ -40,7 +40,7 @@ namespace boost{namespace icl{namespace detail
 | lookup even in C++11 (see impl_config.hpp).                                  |
 |                                                                              |
 | Additionally, Boost.ICL interval find functions are documented to return the |
-| _first_ eligible element, which is not guaranteed by std::{set|map}::find;   |
+| _first_ eligible element, which is not guaranteed by std::(set|map)::find;   |
 | assoc_container_adaptor fixes that.
 +-----------------------------------------------------------------------------*/
 
