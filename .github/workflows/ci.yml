@@ -126,7 +126,7 @@ jobs:
           apt-get update
           apt-get -y install clang-22 libc++-22-dev libc++abi-22-dev
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - name: linux
         shell: bash
@@ -208,7 +208,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       - name: "osx"
         shell: bash
