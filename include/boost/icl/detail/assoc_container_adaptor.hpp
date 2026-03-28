@@ -37,7 +37,9 @@ namespace boost{namespace icl{namespace detail
 | heterogeneous lookup overloads, and does nothing for C++11 containers        |
 | without het lookup. This circumvents libc++'s singular behavior except when  |
 | in C++11 mode: in this case, we use Boost.Container, which supports het      |
-| lookup even in C++11 (see impl_config.hpp).                                  |
+| lookup even in C++11 (see impl_config.hpp). An insert function is also       |
+| provided that prevents UB when the element would violate SWO (this is UB     |
+| regardless of the resolution of libc++ issue).                               |
 |                                                                              |
 | Additionally, Boost.ICL interval find functions are documented to return the |
 | _first_ eligible element, which is not guaranteed by std::(set|map)::find;   |
@@ -61,12 +63,24 @@ template<class AssocContainer>
 struct assoc_container_adaptor: AssocContainer
 {
     using key_type = typename AssocContainer::key_type;
+    using value_type = typename AssocContainer::value_type;
     using size_type = typename AssocContainer::size_type;
     using key_compare = typename AssocContainer::key_compare::super;
     using iterator = typename AssocContainer::iterator;
     using const_iterator = typename AssocContainer::const_iterator;
 
     using AssocContainer::AssocContainer;
+
+    std::pair<iterator, bool> insert(const value_type& x)
+    {
+        auto it = lower_bound(key_from_value(x));
+        if(it == AssocContainer::end() || !AssocContainer::value_comp()(x, *it)) {
+            return {AssocContainer::insert(it, x), true};
+        }
+        else {
+            return {it, false};
+        }
+    }
 
     size_type count(const key_type& key)
     {
@@ -78,23 +92,12 @@ struct assoc_container_adaptor: AssocContainer
         return AssocContainer::count(std::cref(key));
     }
 
-    template<
-        class IsSet = assoc_container_is_set<AssocContainer>,
-        typename std::enable_if<IsSet::value>::type* = nullptr>
     iterator find(const key_type& key)
     {
         auto it = AssocContainer::lower_bound(std::cref(key));
-        return it == AssocContainer::end() || AssocContainer::key_comp()(key, *it)?
-            AssocContainer::end(): it;
-    }
-
-    template<
-        class IsSet = assoc_container_is_set<AssocContainer>,
-        typename std::enable_if<!IsSet::value>::type* = nullptr>
-    iterator find(const key_type& key)
-    {
-        auto it = AssocContainer::lower_bound(std::cref(key));
-        return it == AssocContainer::end() || AssocContainer::key_comp()(key, it->first)?
+        return 
+            it == AssocContainer::end() ||
+            AssocContainer::key_comp()(key, key_from_value(*it))?
             AssocContainer::end(): it;
     }
 
@@ -131,6 +134,23 @@ struct assoc_container_adaptor: AssocContainer
     const_iterator upper_bound(const key_type& key) const
     {
         return AssocContainer::upper_bound(std::cref(key));
+    }
+
+private:
+    template<
+        class IsSet = assoc_container_is_set<AssocContainer>,
+        typename std::enable_if<IsSet::value>::type* = nullptr>
+    static const key_type& key_from_value(const value_type& x)
+    {
+        return x;
+    }
+
+    template<
+        class IsSet = assoc_container_is_set<AssocContainer>,
+        typename std::enable_if<!IsSet::value>::type* = nullptr>
+    static const key_type& key_from_value(const value_type& x)
+    {
+        return x.first;
     }
 };
 
