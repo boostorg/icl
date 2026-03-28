@@ -82,9 +82,9 @@ struct assoc_container_adaptor: AssocContainer
         }
     }
 
-    std::pair<iterator, bool> insert(iterator, const value_type& x)
+    iterator insert(iterator, const value_type& x)
     {
-        return insert(x);
+        return insert(x).first;
     }
 
     size_type count(const key_type& key)
