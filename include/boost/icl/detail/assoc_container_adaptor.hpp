@@ -9,6 +9,7 @@ Copyright (c) 2026: Joaquin M Lopez Munoz
 #define BOOST_ICL_DETAIL_ASSOC_CONTAINER_ADAPTOR_HPP_JMLM_260320
 
 #include <boost/icl/impl_config.hpp>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 
@@ -39,7 +40,7 @@ namespace boost{namespace icl{namespace detail
 | in C++11 mode: in this case, we use Boost.Container, which supports het      |
 | lookup even in C++11 (see impl_config.hpp). Insert functions are also        |
 | provided that prevent UB when the element would violate SWO (this is UB      |
-| regardless of the resolution of libc++ issue).                               |
+| regardless of the resolution of libc++'s issue).                             |
 |                                                                              |
 | Additionally, Boost.ICL interval find functions are documented to return the |
 | _first_ eligible element, which is not guaranteed by std::(set|map)::find;   |
@@ -100,8 +101,12 @@ struct assoc_container_adaptor: AssocContainer
         }
     }
 
-    iterator insert(const_iterator, const value_type& x)
+    iterator insert(const_iterator pos, const value_type& x)
     {
+        if((pos == AssocContainer::end() || AssocContainer::value_comp()(x, *pos)) &&
+           (pos == AssocContainer::begin() || AssocContainer::value_comp()(*std::prev(pos), x))){
+            return AssocContainer::insert(pos, x);
+        }
         return insert(x).first;
     }
 
