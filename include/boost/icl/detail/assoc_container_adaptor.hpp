@@ -37,8 +37,8 @@ namespace boost{namespace icl{namespace detail
 | heterogeneous lookup overloads, and does nothing for C++11 containers        |
 | without het lookup. This circumvents libc++'s singular behavior except when  |
 | in C++11 mode: in this case, we use Boost.Container, which supports het      |
-| lookup even in C++11 (see impl_config.hpp). An insert function is also       |
-| provided that prevents UB when the element would violate SWO (this is UB     |
+| lookup even in C++11 (see impl_config.hpp). Insert functions are also        |
+| provided that prevent UB when the element would violate SWO (this is UB      |
 | regardless of the resolution of libc++ issue).                               |
 |                                                                              |
 | Additionally, Boost.ICL interval find functions are documented to return the |
@@ -80,6 +80,11 @@ struct assoc_container_adaptor: AssocContainer
         else {
             return {it, false};
         }
+    }
+
+    std::pair<iterator, bool> insert(iterator, const value_type& x)
+    {
+        return insert(x);
     }
 
     size_type count(const key_type& key)
