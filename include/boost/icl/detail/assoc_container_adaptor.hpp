@@ -59,6 +59,15 @@ template<class AssocContainer>
 using assoc_container_is_set = std::is_same<
     typename AssocContainer::key_type, typename AssocContainer::value_type>;
 
+template<typename InputIterator>
+using assoc_container_enable_if_is_input_iterator_t =
+    typename std::enable_if<
+        std::is_convertible<
+            typename std::iterator_traits<InputIterator>::iterator_category,
+            std::input_iterator_tag
+        >::value
+    >::type;
+
 template<class AssocContainer>
 struct assoc_container_adaptor: AssocContainer
 {
@@ -71,6 +80,15 @@ struct assoc_container_adaptor: AssocContainer
 
     using AssocContainer::AssocContainer;
 
+    template<
+        typename InputIterator,
+        typename = assoc_container_enable_if_is_input_iterator_t<InputIterator>
+    >
+    void insert(InputIterator first, InputIterator last)
+    {
+        while(first != last) insert(*first++);
+    }
+
     std::pair<iterator, bool> insert(const value_type& x)
     {
         auto it = lower_bound(key_from_value(x));
@@ -82,7 +100,7 @@ struct assoc_container_adaptor: AssocContainer
         }
     }
 
-    iterator insert(iterator, const value_type& x)
+    iterator insert(const_iterator, const value_type& x)
     {
         return insert(x).first;
     }
