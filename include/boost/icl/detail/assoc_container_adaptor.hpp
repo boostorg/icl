@@ -74,7 +74,7 @@ struct assoc_container_adaptor: AssocContainer
     std::pair<iterator, bool> insert(const value_type& x)
     {
         auto it = lower_bound(key_from_value(x));
-        if(it == AssocContainer::end() || !AssocContainer::value_comp()(x, *it)) {
+        if(it == AssocContainer::end() || AssocContainer::value_comp()(x, *it)) {
             return {AssocContainer::insert(it, x), true};
         }
         else {
