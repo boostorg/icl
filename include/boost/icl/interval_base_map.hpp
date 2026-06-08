@@ -440,29 +440,90 @@ public:
     //= Iterator related
     //==========================================================================
 
-    iterator lower_bound(const key_type& interval)
-    { return _map.lower_bound(interval); }
+    // Fix: exclusive_less_than is not a strict weak ordering -- geometric overlap is not transitive.
+    // libc++ >= 22 (PR #155245) uses a single-descent search that requires SWO; raw lower/upper_bound
+    // can branch into the wrong subtree. We anchor on a closed singleton point [v,v], which overlaps
+    // at most one disjoint stored interval, making the restricted comparison a proper SWO.
+    // Static-bounds continuous types (e.g. right_open_interval<double>) are officially unsupported by
+    // ICL for containers and have no singleton(); they fall back to the raw call.
+    static bool key_overlaps(const key_compare& comp, const key_type& a, const key_type& b)
+    { return !comp(a,b) && !comp(b,a); }
 
-    iterator upper_bound(const key_type& interval)
-    { return _map.upper_bound(interval); }
-
-    const_iterator lower_bound(const key_type& interval)const
-    { return _map.lower_bound(interval); }
-
-    const_iterator upper_bound(const key_type& interval)const
-    { return _map.upper_bound(interval); }
-
-    std::pair<iterator,iterator> equal_range(const key_type& interval)
-    { 
-        return std::pair<iterator,iterator>
-               (lower_bound(interval), upper_bound(interval)); 
+    template<class MapT, class ItT, class KT = key_type>
+    static typename enable_if<
+        mpl::or_< has_dynamic_bounds<KT>
+                , is_discrete<typename interval_traits<KT>::domain_type> >, ItT>::type
+    lower_bound_impl(MapT& m, const key_type& interval)
+    {
+        if(icl::is_empty(interval)) return m.lower_bound(interval);
+        const key_compare comp;
+        ItT it_ = m.lower_bound(icl::singleton<key_type>(icl::lower(interval)));
+        // At most one correction: the anchor can land on a stored interval that merely touches an
+        // open lower bound (e.g. query (2,..] next to stored [..,2]); step past it if so.
+        if(it_ != m.end() && !key_overlaps(comp, (*it_).first, interval)
+                          && !comp(interval, (*it_).first))
+            ++it_;
+        return it_;
     }
 
-    std::pair<const_iterator,const_iterator> 
+    template<class MapT, class ItT, class KT = key_type>
+    static typename enable_if<
+        mpl::and_< has_static_bounds<KT>
+                 , is_continuous<typename interval_traits<KT>::domain_type> >, ItT>::type
+    lower_bound_impl(MapT& m, const key_type& interval)
+    { return m.lower_bound(interval); }
+
+    template<class MapT, class ItT, class KT = key_type>
+    static typename enable_if<
+        mpl::or_< has_dynamic_bounds<KT>
+                , is_discrete<typename interval_traits<KT>::domain_type> >, ItT>::type
+    upper_bound_impl(MapT& m, const key_type& interval)
+    {
+        if(icl::is_empty(interval)) return m.upper_bound(interval);
+        const key_compare comp;
+        const key_type anchor_pt = icl::singleton<key_type>(icl::upper(interval));
+        ItT it_ = m.upper_bound(anchor_pt);
+        // At most one back-correction: exclude a stored interval that only touches an open upper
+        // bound. Guard prevents stepping back onto an unrelated neighbour for an empty-run query.
+        if(it_ != m.begin())
+        {
+            ItT prev_ = it_; --prev_;
+            if(!comp((*prev_).first, anchor_pt) && !key_overlaps(comp, (*prev_).first, interval))
+                it_ = prev_;
+        }
+        return it_;
+    }
+
+    template<class MapT, class ItT, class KT = key_type>
+    static typename enable_if<
+        mpl::and_< has_static_bounds<KT>
+                 , is_continuous<typename interval_traits<KT>::domain_type> >, ItT>::type
+    upper_bound_impl(MapT& m, const key_type& interval)
+    { return m.upper_bound(interval); }
+
+    iterator lower_bound(const key_type& interval)
+    { return lower_bound_impl<ImplMapT,iterator>(_map, interval); }
+
+    iterator upper_bound(const key_type& interval)
+    { return upper_bound_impl<ImplMapT,iterator>(_map, interval); }
+
+    const_iterator lower_bound(const key_type& interval)const
+    { return lower_bound_impl<const ImplMapT,const_iterator>(_map, interval); }
+
+    const_iterator upper_bound(const key_type& interval)const
+    { return upper_bound_impl<const ImplMapT,const_iterator>(_map, interval); }
+
+    std::pair<iterator,iterator> equal_range(const key_type& interval)
+    {
+        return std::pair<iterator,iterator>
+               (lower_bound(interval), upper_bound(interval));
+    }
+
+    std::pair<const_iterator,const_iterator>
         equal_range(const key_type& interval)const
-    { 
+    {
         return std::pair<const_iterator,const_iterator>
-               (lower_bound(interval), upper_bound(interval)); 
+               (lower_bound(interval), upper_bound(interval));
     }
 
     iterator begin() { return _map.begin(); }
