@@ -9,6 +9,7 @@ Copyright (c) 1999-2006: Cortex Software GmbH, Kantstrasse 57, Berlin
 #ifndef BOOST_ICL_INTERVAL_BASE_MAP_HPP_JOFA_990223
 #define BOOST_ICL_INTERVAL_BASE_MAP_HPP_JOFA_990223
 
+#include <algorithm>
 #include <limits>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/or.hpp>
@@ -285,11 +286,14 @@ public:
         return icl::find(*this, key_value);
     }
 
-    /** Find the first interval value pair, that collides with interval 
+    /** Find the first interval value pair, that collides with interval
         \c key_interval */
     const_iterator find(const interval_type& key_interval)const
-    { 
-        return _map.find(key_interval); 
+    {
+        const_iterator it_ = lower_bound(key_interval);
+        if(it_ != end() && !key_compare()(key_interval, (*it_).first))
+            return it_;
+        return end();
     }
 
     /** Total select function. */
@@ -615,7 +619,7 @@ protected:
                                          const codomain_type& co_val   )
     {
         // inter_val is not conained in this map. Insertion will be successful
-        BOOST_ASSERT(this->_map.find(inter_val) == this->_map.end());
+        BOOST_ASSERT(this->find(inter_val) == this->end());
         BOOST_ASSERT((!on_absorbtion<type,Combiner,Traits::absorbs_identities>::is_absorbable(co_val)));
         return this->_map.insert(prior_, value_type(inter_val, version<Combiner>()(co_val)));
     }
@@ -1018,10 +1022,13 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
         return that()->handle_inserted(insertion.first);
     else
     {
-        // Detect the first and the end iterator of the collision sequence
-        iterator first_ = this->_map.lower_bound(inter_val),
-                 last_  = prior(this->_map.upper_bound(inter_val));
-        //assert(end_ == this->_map.upper_bound(inter_val));
+        // Detect the first and the end iterator of the collision sequence.
+        // Use the member lower_bound/upper_bound (not _map's) so the overlapping run is found via the
+        // SWO-safe scalar-endpoint anchoring -- exclusive_less_than is not a strict weak ordering, see
+        // the note at those accessors.
+        iterator first_ = this->lower_bound(inter_val),
+                 last_  = prior(this->upper_bound(inter_val));
+        //assert(end_ == this->upper_bound(inter_val));
         iterator it_ = first_;
         interval_type rest_interval = inter_val;
 
@@ -1211,10 +1218,11 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
         return that()->handle_inserted(insertion.first);
     else
     {
-        // Detect the first and the end iterator of the collision sequence
-        iterator first_ = this->_map.lower_bound(inter_val),
-                 last_  = prior(this->_map.upper_bound(inter_val));
-        //assert((++last_) == this->_map.upper_bound(inter_val));
+        // Detect the first and the end iterator of the collision sequence.
+        // Use the member lower_bound/upper_bound (not _map's); see the note at those accessors.
+        iterator first_ = this->lower_bound(inter_val),
+                 last_  = prior(this->upper_bound(inter_val));
+        //assert((++last_) == this->upper_bound(inter_val));
         iterator it_ = first_;
         insert_main(inter_val, co_val, it_, last_);
         return it_;

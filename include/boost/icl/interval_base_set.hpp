@@ -19,6 +19,7 @@ Copyright (c) 1999-2006: Cortex Software GmbH, Kantstrasse 57, Berlin
 #   include <set>
 #endif
 
+#include <algorithm>
 #include <limits>
 #include <boost/next_prior.hpp>
 #include <boost/icl/associative_interval_container.hpp>
@@ -239,7 +240,10 @@ public:
     /** Find the first interval, that collides with interval \c key_interval */
     const_iterator find(const interval_type& key_interval)const
     {
-        return this->_set.find(key_interval);
+        const_iterator it_ = lower_bound(key_interval);
+        if(it_ != end() && !key_compare()(key_interval, *it_))
+            return it_;
+        return end();
     }
 
     //==========================================================================
@@ -569,7 +573,9 @@ inline typename interval_base_set<SubType,DomainT,Compare,Interval,Alloc>::itera
         return that()->handle_inserted(insertion.first);
     else
     {
-        iterator last_ = prior(this->_set.upper_bound(addend));
+        // member upper_bound (not _set's) widens to the full overlapping run via SWO-safe scalar
+        // anchoring; exclusive_less_than is not a strict weak ordering, see the note at those accessors.
+        iterator last_ = prior(this->upper_bound(addend));
         return that()->add_over(addend, last_);
     }
 }
@@ -589,7 +595,9 @@ inline typename interval_base_set<SubType,DomainT,Compare,Interval,Alloc>::itera
         return that()->handle_inserted(insertion);
     else
     {
-        iterator last_ = prior(this->_set.upper_bound(addend));
+        // member upper_bound (not _set's) widens to the full overlapping run via SWO-safe scalar
+        // anchoring; exclusive_less_than is not a strict weak ordering, see the note at those accessors.
+        iterator last_ = prior(this->upper_bound(addend));
         return that()->add_over(addend, last_);
     }
 }

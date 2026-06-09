@@ -162,7 +162,7 @@ private:
 
     iterator add_over(const interval_type& addend, iterator last_)
     {
-        iterator first_ = this->_set.lower_bound(addend);
+        iterator first_ = this->lower_bound(addend);
         //BOOST_ASSERT(next(last_) == this->_set.upper_bound(inter_val));
 
         iterator it_ = first_;
