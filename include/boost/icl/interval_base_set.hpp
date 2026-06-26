@@ -379,7 +379,7 @@ public:
                 , is_discrete<typename interval_traits<VT>::domain_type> >, ItT>::type
     lower_bound_impl(SetT& s, const value_type& interval)
     {
-        if(icl::is_empty(interval)) return s.lower_bound(interval);
+        if(icl::is_empty(interval)) return s.end();
         const key_compare comp;
         ItT it_ = s.lower_bound(icl::singleton<value_type>(icl::lower(interval)));
         // At most one correction: the anchor can land on a stored interval that merely touches an
@@ -389,12 +389,32 @@ public:
         return it_;
     }
 
+    // Gets lower_bound for `has_static_bounds && is_continuous ` (e.g. right_open_interval<double>)
+    // with point-anchored heterogeneous lookups.
+    //
+    // C++11: std::set has no heterogeneous lookup, so this branch keeps a
+    // documented limitation (use C++14, continuous_interval<> or a Boost.container backend)
     template<class SetT, class ItT, class VT = value_type>
     static typename enable_if<
         mpl::and_< has_static_bounds<VT>
-                 , is_continuous<typename interval_traits<VT>::domain_type> >, ItT>::type
+                , is_continuous<typename interval_traits<VT>::domain_type> >, ItT>::type
     lower_bound_impl(SetT& s, const value_type& interval)
-    { return s.lower_bound(interval); }
+    {
+#       if (BOOST_CXX_VERSION >= 201402L)
+        if(icl::is_empty(interval)) return s.end();
+        const key_compare comp;
+        // Anchor on the domain point lower(interval): SWO-safe heterogeneous lookup.
+        ItT it_ = s.lower_bound(icl::lower(interval));
+        // One forward correction: an OPEN lower bound can land on a stored interval that the
+        // query only kisses at the anchor point (it lies left of the query); step past it.
+        if(it_ != s.end() && !key_overlaps(comp, *it_, interval) && !comp(interval, *it_))
+            ++it_;
+        return it_;
+#       else
+        return s.lower_bound(interval); // C++11: static-continuous unsupported under libc++>=22
+#       endif
+    }
+
 
     template<class SetT, class ItT, class VT = value_type>
     static typename enable_if<
@@ -402,7 +422,7 @@ public:
                 , is_discrete<typename interval_traits<VT>::domain_type> >, ItT>::type
     upper_bound_impl(SetT& s, const value_type& interval)
     {
-        if(icl::is_empty(interval)) return s.upper_bound(interval);
+        if(icl::is_empty(interval)) return s.end();
         const key_compare comp;
         const value_type anchor_pt = icl::singleton<value_type>(icl::upper(interval));
         ItT it_ = s.upper_bound(anchor_pt);
@@ -417,12 +437,37 @@ public:
         return it_;
     }
 
+    // Gets upper_bound for `has_static_bounds && is_continuous ` (e.g. right_open_interval<double>)
+    // with point-anchored heterogeneous lookups.
+    //
+    // C++11: std::set has no heterogeneous lookup, so this branch keeps a
+    // documented limitation (use C++14, continuous_interval<> or a Boost.container backend)
     template<class SetT, class ItT, class VT = value_type>
     static typename enable_if<
         mpl::and_< has_static_bounds<VT>
-                 , is_continuous<typename interval_traits<VT>::domain_type> >, ItT>::type
+                , is_continuous<typename interval_traits<VT>::domain_type> >, ItT>::type
     upper_bound_impl(SetT& s, const value_type& interval)
-    { return s.upper_bound(interval); }
+    {
+#       if (BOOST_CXX_VERSION >= 201402L)
+        if(icl::is_empty(interval)) return s.end();
+        const key_compare comp;
+        typedef typename interval_traits<value_type>::domain_type domain_type;
+        const domain_type anchor = icl::upper(interval);          // anchor on the domain point
+        ItT it_ = s.upper_bound(anchor);
+        // One back-correction: an interval starting exactly at upper(interval) (touching the
+        // query at an open upper bound) is the first interval to the right and must be included.
+        if(it_ != s.begin())
+        {
+            ItT prev_ = it_; --prev_;
+            if(!comp(*prev_, anchor) && !key_overlaps(comp, *prev_, interval))   // interval-vs-point
+                it_ = prev_;
+        }
+        return it_;
+#       else
+        return s.upper_bound(interval); // C++11: static-continuous unsupported under libc++>=22
+#       endif
+    }
+
 
     iterator lower_bound(const value_type& interval)
     { return lower_bound_impl<ImplSetT,iterator>(_set, interval); }
