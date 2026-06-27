@@ -320,3 +320,92 @@ BOOST_AUTO_TEST_CASE(map_crash_case_closed_shared_lower)
     const std::string expected = "[0,1]{012} (1,2]{12} (2,3]{1} ";
     BOOST_CHECK_MESSAGE(dumpm(m) == expected, "map crash-case decomposition: got '" + dumpm(m) + "'");
 }
+
+
+// interval_set: add an interval overlapping a stored one.
+// Exercises the blind-add path: the overlapping insert must be rejected as a
+// collision and merged, regardless of the std lib's insertion algorithm.
+BOOST_AUTO_TEST_CASE(set_overlapping_add_is_swo_safe)
+{
+    interval_set<int> s;
+    s += interval<int>::right_open(0, 5);          // stored, disjoint: {[0,5)}
+
+    BOOST_CHECK_NO_THROW(
+        s += interval<int>::right_open(3, 8));     // overlaps [0,5)
+
+    // Sanity: the merged result must be a single [0,8).
+    interval_set<int> expected;
+    expected += interval<int>::right_open(0, 8);
+    BOOST_CHECK_EQUAL(s, expected);
+}
+
+// interval_map: add an interval overlapping a stored one.
+// Same blind-add path as above; must merge without throwing or corrupting.
+BOOST_AUTO_TEST_CASE(map_overlapping_add_is_swo_safe)
+{
+    interval_map<int,int> m;
+    m += std::make_pair(interval<int>::right_open(0, 5), 1);   // {[0,5)->1}
+
+    BOOST_CHECK_NO_THROW(
+        m += std::make_pair(interval<int>::right_open(3, 8), 1));
+}
+
+// interval_set: multi-interval overlap (collision run).
+// The added interval overlaps a contiguous run of stored intervals; the insert
+// must land on the run and merge all of them into one.
+BOOST_AUTO_TEST_CASE(set_multi_overlap_add_is_swo_safe)
+{
+    interval_set<int> s;
+    s += interval<int>::right_open(0, 5);     // {[0,5), [10,15)}
+    s += interval<int>::right_open(10, 15);
+
+    BOOST_CHECK_NO_THROW(
+        s += interval<int>::right_open(3, 12));// overlaps BOTH stored intervals
+
+    interval_set<int> expected;
+    expected += interval<int>::right_open(0, 15);
+    BOOST_CHECK_EQUAL(s, expected);
+}
+
+// interval_set: HINTED add overload with a deliberately stale hint.
+// The public add(prior,.) forwards a caller hint with a possibly-overlapping
+// argument. Tested standard libraries reject the overlap safely here (the
+// O(1)-hint neighbour check fails and they fall back to a full search), so this
+// is a robustness guard, not a reproduction of a known corruption. A hint must
+// never change the result, so compare against the un-hinted add.
+BOOST_AUTO_TEST_CASE(set_hinted_overlapping_add_is_swo_safe)
+{
+    interval_set<int> s;
+    s += interval<int>::right_open(0, 1);
+    s += interval<int>::right_open(2, 3);
+    s += interval<int>::right_open(4, 5);          // {[0,1),[2,3),[4,5)}
+
+    BOOST_CHECK_NO_THROW(
+        s.add(std::prev(s.end()), interval<int>::right_open(0, 3)));
+
+    interval_set<int> expected;
+    expected += interval<int>::right_open(0, 1);
+    expected += interval<int>::right_open(2, 3);
+    expected += interval<int>::right_open(4, 5);
+    expected += interval<int>::right_open(0, 3);   // un-hinted, known-correct
+    BOOST_CHECK_EQUAL(s, expected);
+}
+
+// interval_map: HINTED add overload with a stale hint, same robustness guard.
+BOOST_AUTO_TEST_CASE(map_hinted_overlapping_add_is_swo_safe)
+{
+    interval_map<int,int> m;
+    m += std::make_pair(interval<int>::right_open(0, 1), 1);
+    m += std::make_pair(interval<int>::right_open(2, 3), 1);
+    m += std::make_pair(interval<int>::right_open(4, 5), 1);
+
+    BOOST_CHECK_NO_THROW(
+        m.add(std::prev(m.end()), std::make_pair(interval<int>::right_open(0, 3), 1)));
+
+    interval_map<int,int> expected;
+    expected += std::make_pair(interval<int>::right_open(0, 1), 1);
+    expected += std::make_pair(interval<int>::right_open(2, 3), 1);
+    expected += std::make_pair(interval<int>::right_open(4, 5), 1);
+    expected += std::make_pair(interval<int>::right_open(0, 3), 1); // un-hinted, known-correct
+    BOOST_CHECK_EQUAL(m, expected);
+}

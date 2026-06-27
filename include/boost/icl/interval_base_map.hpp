@@ -453,6 +453,12 @@ public:
     static bool key_overlaps(const key_compare& comp, const key_type& a, const key_type& b)
     { return !comp(a,b) && !comp(b,a); }
 
+    // lower_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
+    // singleton query: we anchor on the closed point [lower,lower] so the
+    // restricted comparison is a strict weak ordering even on standard libraries
+    // that use a single-descent search (libc++ >= 22, PR #155245).
+    // Alternative: a heterogeneous point query (needs C++14 transparent
+    // comparators) -- see interval_base_set::lower_bound_impl.
     template<class MapT, class ItT, class KT = key_type>
     static typename enable_if<
         mpl::or_< has_dynamic_bounds<KT>
@@ -461,7 +467,14 @@ public:
     {
         if(icl::is_empty(interval)) return m.end();
         const key_compare comp;
-        ItT it_ = m.lower_bound(icl::singleton<key_type>(icl::lower(interval)));
+        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain minimum
+        // (singleton() is undefined for left_open/open types there).
+        ItT it_;
+        if(numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
+               ::is_less_than(icl::lower(interval)))
+            it_ = m.lower_bound(icl::singleton<key_type>(icl::lower(interval)));
+        else
+            it_ = m.begin();
         // At most one correction: the anchor can land on a stored interval that merely touches an
         // open lower bound (e.g. query (2,..] next to stored [..,2]); step past it if so.
         if(it_ != m.end() && !key_overlaps(comp, (*it_).first, interval)
@@ -497,6 +510,12 @@ public:
     }
 
 
+    // upper_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
+    // singleton query: we anchor on the closed point [upper,upper] so the
+    // restricted comparison is a strict weak ordering even on standard libraries
+    // that use a single-descent search (libc++ >= 22, PR #155245).
+    // Alternative: a heterogeneous point query (needs C++14 transparent
+    // comparators) -- see interval_base_set::upper_bound_impl.
     template<class MapT, class ItT, class KT = key_type>
     static typename enable_if<
         mpl::or_< has_dynamic_bounds<KT>
@@ -505,14 +524,20 @@ public:
     {
         if(icl::is_empty(interval)) return m.end();
         const key_compare comp;
-        const key_type anchor_pt = icl::singleton<key_type>(icl::upper(interval));
-        ItT it_ = m.upper_bound(anchor_pt);
-        // At most one back-correction: exclude a stored interval that only touches an open upper
-        // bound. Guard prevents stepping back onto an unrelated neighbour for an empty-run query.
+        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain maximum
+        // (singleton() silently wraps for right_open/open types there).
+        ItT it_;
+        if(numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                        ::is_greater_than(icl::upper(interval)))
+            it_ = m.upper_bound(icl::singleton<key_type>(icl::upper(interval)));
+        else
+            it_ = m.end();
+        // At most one back-correction: include a stored interval that only touches an open upper
+        // bound. Uses the interval-vs-point comparator overload, so it is valid at the maximum too.
         if(it_ != m.begin())
         {
             ItT prev_ = it_; --prev_;
-            if(!comp((*prev_).first, anchor_pt) && !key_overlaps(comp, (*prev_).first, interval))
+            if(!comp((*prev_).first, icl::upper(interval)) && !key_overlaps(comp, (*prev_).first, interval))
                 it_ = prev_;
         }
         return it_;
@@ -659,6 +684,24 @@ private:
 
 protected:
 
+    // disjoint-only insertion hardening (see interval_base_set::_swo_insert)
+    std::pair<iterator,bool> _swo_insert(const value_type& x_)
+    {
+        iterator lb_ = this->lower_bound(x_.first);
+        if(lb_ == this->_map.end() || key_compare()(x_.first, (*lb_).first))
+            return std::pair<iterator,bool>(this->_map.insert(lb_, x_), true);
+        return std::pair<iterator,bool>(lb_, false);
+    }
+    std::pair<iterator,bool> _swo_insert(const iterator& hint_, const value_type& x_)
+    {
+        bool good_ = (hint_ == this->_map.end() || key_compare()(x_.first, (*hint_).first));
+        if(good_ && hint_ != this->_map.begin())
+        { iterator p_ = hint_; --p_; good_ = key_compare()((*p_).first, x_.first); }
+        if(good_)
+            return std::pair<iterator,bool>(this->_map.insert(hint_, x_), true);
+        return _swo_insert(x_);
+    }
+
     template <class Combiner>
     iterator gap_insert(iterator prior_, const interval_type& inter_val, 
                                          const codomain_type& co_val   )
@@ -677,31 +720,23 @@ protected:
         // Never try to insert an identity element into an identity element absorber here:
         BOOST_ASSERT((!(on_absorbtion<type,Combiner,Traits::absorbs_identities>::is_absorbable(co_val))));
 
-        iterator inserted_ 
-            = this->_map.insert(prior_, value_type(inter_val, Combiner::identity_element()));
+        std::pair<iterator,bool> ins_
+            = this->_swo_insert(prior_, value_type(inter_val, Combiner::identity_element()));
 
-        if((*inserted_).first == inter_val && (*inserted_).second == Combiner::identity_element())
+        if(ins_.second)
         {
-            Combiner()((*inserted_).second, co_val);
-            return std::pair<iterator,bool>(inserted_, true);
+            Combiner()((*ins_.first).second, co_val);
+            return std::pair<iterator,bool>(ins_.first, true);
         }
         else
-            return std::pair<iterator,bool>(inserted_, false);
+            return std::pair<iterator,bool>(ins_.first, false);
     }
 
     std::pair<iterator, bool>
     insert_at(const iterator& prior_, const interval_type& inter_val, 
                                       const codomain_type& co_val   )
     {
-        iterator inserted_
-            = this->_map.insert(prior_, value_type(inter_val, co_val));
-
-        if(inserted_ == prior_)
-            return std::pair<iterator,bool>(inserted_, false);
-        else if((*inserted_).first == inter_val)
-            return std::pair<iterator,bool>(inserted_, true);
-        else
-            return std::pair<iterator,bool>(inserted_, false);
+        return this->_swo_insert(prior_, value_type(inter_val, co_val));
     }
 
 
@@ -1061,7 +1096,7 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
         return this->_map.end();
 
     std::pair<iterator,bool> insertion 
-        = this->_map.insert(value_type(inter_val, version<Combiner>()(co_val)));
+        = this->_swo_insert(value_type(inter_val, version<Combiner>()(co_val)));
 
     if(insertion.second)
         return that()->handle_inserted(insertion.first);
@@ -1257,7 +1292,7 @@ inline typename interval_base_map<SubType,DomainT,CodomainT,Traits,Compare,Combi
     if(on_codomain_absorbtion::is_absorbable(co_val)) 
         return this->_map.end();
 
-    std::pair<iterator,bool> insertion = this->_map.insert(addend);
+    std::pair<iterator,bool> insertion = this->_swo_insert(addend);
 
     if(insertion.second)
         return that()->handle_inserted(insertion.first);

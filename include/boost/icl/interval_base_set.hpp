@@ -41,6 +41,56 @@ namespace boost{namespace icl
 {
 
 /** \brief Implements a set as a set of intervals (base class) */
+//==============================================================================
+//= CONTAINER INVARIANT (the strict-weak-ordering contract)
+//==============================================================================
+// The underlying std::set/std::map is ALWAYS pairwise-disjoint. On disjoint
+// intervals exclusive_less_than is a strict total order, so every comparison
+// the container performs between STORED elements is a valid strict weak
+// ordering. Consequently erase, equal_range, iteration order and the
+// rebalancing done on the next mutation need no special handling -- they were
+// never at risk, even on standard libraries whose tree uses a single-descent
+// search that assumes a SWO (libc++ >= 22, PR #155245).
+//
+// The ordering is violated only by an *argument* that overlaps stored
+// elements: such an argument is transiently equivalent to several ordered
+// stored elements, which breaks transitivity of equivalence. Where that
+// actually bites depends on the operation:
+//
+//   * lower_bound / upper_bound / equal_range -- a tree descent guided by the
+//     overlapping argument can return a wrong (but not rejected) iterator, and
+//     ICL then operates on the wrong range. This is the real, observable SWO
+//     bug; the accessors below anchor on a singleton/scalar point that overlaps
+//     at most one disjoint stored interval to avoid it (see lower_bound_impl /
+//     upper_bound_impl).
+//
+//   * the add insert (un-hinted AND hinted) -- formally violates the SWO
+//     precondition too, but is benign on every standard library tested. A
+//     unique-key insert does a single root-to-leaf descent that stops on the
+//     first equivalent node, and because the intervals overlapping the argument
+//     form a contiguous in-order run, that descent always lands on the run and
+//     rejects the insert {pos,false} -- exactly the collision signal ICL's add()
+//     relies on. The hinted overload behaves the same: for an overlapping
+//     argument the O(1)-hint neighbour check fails and the library falls back to
+//     the full search, which also rejects. No tested standard library misplaces
+//     or corrupts the insert for any hint position. Routing the add inserts
+//     through _swo_insert only removes the formal UB; it does not fix an
+//     observed failure.
+//
+// (Contrast the query accessors above: a single-descent lower_bound really can
+// return the wrong iterator for an overlapping argument -- that is the only
+// empirically reproduced SWO failure, and it is fixed at those accessors, not
+// here.)
+//
+// _swo_insert keeps the inserts robust regardless of the container's algorithm:
+// it probes with the SWO-safe member lower_bound, inserts only a disjoint key
+// with a correct hint (so the container compares the argument solely against
+// disjoint neighbours, a valid SWO), and on collision reports the colliding
+// position without touching the container. The residual/gap inserts in
+// add_front/add_segment/add_rear stay raw: their arguments are
+// disjoint-by-construction, so they are never overlapping
+// and need no probe.
+//==============================================================================
 template
 <
     typename             SubType,
@@ -373,6 +423,13 @@ public:
     static bool key_overlaps(const key_compare& comp, const value_type& a, const value_type& b)
     { return !comp(a,b) && !comp(b,a); }
 
+    // lower_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
+    // singleton query: we anchor on the closed point [lower,lower] so the
+    // restricted comparison is a strict weak ordering even on standard libraries
+    // that use a single-descent search (libc++ >= 22, PR #155245).
+    // Alternative: a heterogeneous point query, s.lower_bound(icl::lower(interval)),
+    // which needs C++14 (std::set transparent comparators) -- see the
+    // has_static_bounds && is_continuous overload below.
     template<class SetT, class ItT, class VT = value_type>
     static typename enable_if<
         mpl::or_< has_dynamic_bounds<VT>
@@ -381,7 +438,14 @@ public:
     {
         if(icl::is_empty(interval)) return s.end();
         const key_compare comp;
-        ItT it_ = s.lower_bound(icl::singleton<value_type>(icl::lower(interval)));
+        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain minimum
+        // (singleton() is undefined for left_open/open types there).
+        ItT it_;
+        if(numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
+               ::is_less_than(icl::lower(interval)))
+            it_ = s.lower_bound(icl::singleton<value_type>(icl::lower(interval)));
+        else
+            it_ = s.begin();
         // At most one correction: the anchor can land on a stored interval that merely touches an
         // open lower bound (e.g. query (2,..] next to stored [..,2]); step past it if so.
         if(it_ != s.end() && !key_overlaps(comp, *it_, interval) && !comp(interval, *it_))
@@ -415,7 +479,13 @@ public:
 #       endif
     }
 
-
+    // upper_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
+    // singleton query: we anchor on the closed point [upper,upper] so the
+    // restricted comparison is a strict weak ordering even on standard libraries
+    // that use a single-descent search (libc++ >= 22, PR #155245).
+    // Alternative: a heterogeneous point query, s.upper_bound(icl::upper(interval)),
+    // which needs C++14 (std::set transparent comparators) -- see the
+    // has_static_bounds && is_continuous overload below.
     template<class SetT, class ItT, class VT = value_type>
     static typename enable_if<
         mpl::or_< has_dynamic_bounds<VT>
@@ -424,14 +494,20 @@ public:
     {
         if(icl::is_empty(interval)) return s.end();
         const key_compare comp;
-        const value_type anchor_pt = icl::singleton<value_type>(icl::upper(interval));
-        ItT it_ = s.upper_bound(anchor_pt);
-        // At most one back-correction: exclude a stored interval that only touches an open upper
-        // bound. Guard prevents stepping back onto an unrelated neighbour for an empty-run query.
+        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain maximum
+        // (singleton() silently wraps for right_open/open types there).
+        ItT it_;
+        if(numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+               ::is_greater_than(icl::upper(interval)))
+            it_ = s.upper_bound(icl::singleton<value_type>(icl::upper(interval)));
+        else
+            it_ = s.end();
+        // At most one back-correction: include a stored interval that only touches an open upper
+        // bound. Uses the interval-vs-point comparator overload, so it is valid at the maximum too.
         if(it_ != s.begin())
         {
             ItT prev_ = it_; --prev_;
-            if(!comp(*prev_, anchor_pt) && !key_overlaps(comp, *prev_, interval))
+            if(!comp(*prev_, icl::upper(interval)) && !key_overlaps(comp, *prev_, interval))
                 it_ = prev_;
         }
         return it_;
@@ -451,7 +527,6 @@ public:
 #       if (BOOST_CXX_VERSION >= 201402L)
         if(icl::is_empty(interval)) return s.end();
         const key_compare comp;
-        typedef typename interval_traits<value_type>::domain_type domain_type;
         const domain_type anchor = icl::upper(interval);          // anchor on the domain point
         ItT it_ = s.upper_bound(anchor);
         // One back-correction: an interval starting exactly at upper(interval) (touching the
@@ -507,6 +582,40 @@ protected:
 protected:
     sub_type* that() { return static_cast<sub_type*>(this); }
     const sub_type* that()const { return static_cast<const sub_type*>(this); }
+
+protected:
+    // --- disjoint-only insertion (hardening) --------------------------------
+    // Guarantees we only ever hand .insert a key that is disjoint from
+    // everything stored, independent of the container's insertion algorithm.
+    // This only removes a formal SWO-precondition violation: passing an
+    // overlapping argument to insert technically breaks the comparator's SWO
+    // contract, but every standard library tested rejects the overlap safely on
+    // both the un-hinted and hinted overloads, so this is not fixing an observed
+    // failure (see the CONTAINER INVARIANT note).
+    // It probes for a colliding interval through the SWO-safe member
+    // lower_bound and inserts only when the key is disjoint, using a correct
+    // hint so the container compares 'addend' solely against disjoint
+    // neighbours. On collision it returns {first-overlapping, false} without
+    // touching the container.
+    std::pair<iterator,bool> _swo_insert(const segment_type& addend)
+    {
+        iterator lb_ = this->lower_bound(addend);
+        if(lb_ == this->_set.end() || key_compare()(addend, *lb_))
+            return std::pair<iterator,bool>(this->_set.insert(lb_, addend), true);
+        return std::pair<iterator,bool>(lb_, false);
+    }
+
+    // Hinted variant: keeps the amortized-constant fast path when 'hint_' is the
+    // correct disjoint position, otherwise falls back to the lower_bound probe.
+    std::pair<iterator,bool> _swo_insert(iterator hint_, const segment_type& addend)
+    {
+        bool good_ = (hint_ == this->_set.end() || key_compare()(addend, *hint_));
+        if(good_ && hint_ != this->_set.begin())
+            { iterator p_ = hint_; --p_; good_ = key_compare()(*p_, addend); }
+        if(good_)
+            return std::pair<iterator,bool>(this->_set.insert(hint_, addend), true);
+        return _swo_insert(addend);
+    }
 
 protected:
     ImplSetT _set;
@@ -612,7 +721,7 @@ inline typename interval_base_set<SubType,DomainT,Compare,Interval,Alloc>::itera
     if(icl::is_empty(addend))
         return this->_set.end();
 
-    std::pair<iterator,bool> insertion = this->_set.insert(addend);
+    std::pair<iterator,bool> insertion = this->_swo_insert(addend);
 
     if(insertion.second)
         return that()->handle_inserted(insertion.first);
@@ -634,10 +743,10 @@ inline typename interval_base_set<SubType,DomainT,Compare,Interval,Alloc>::itera
     if(icl::is_empty(addend))
         return prior_;
 
-    iterator insertion = this->_set.insert(prior_, addend);
+    std::pair<iterator,bool> insertion = this->_swo_insert(prior_, addend);
 
-    if(*insertion == addend)
-        return that()->handle_inserted(insertion);
+    if(insertion.second)
+        return that()->handle_inserted(insertion.first);
     else
     {
         // member upper_bound (not _set's) widens to the full overlapping run via SWO-safe scalar
