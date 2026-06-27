@@ -36,6 +36,7 @@ using namespace boost::icl;
 
 #include <boost/icl/discrete_interval.hpp>
 #include <boost/icl/continuous_interval.hpp>
+#include <boost/icl/interval.hpp>
 
 //- sta.asy.{dis|con} ----------------------------------------------------------
 BOOST_AUTO_TEST_CASE_TEMPLATE
@@ -99,6 +100,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE
 BOOST_AUTO_TEST_CASE_TEMPLATE
 (fastest_itl_left_open_interval_4_bicremental_types, T, discrete_types)
 {        singelizable_interval_4_bicremental_types<left_open_interval<T> >(); }
+
+// first()/last() must be symmetric guards over the open boundary.
+// last() asserts numeric_minimum (domain_prior can't underflow); first() must
+// likewise assert numeric_maximum (domain_next can't overflow). This checks the
+// guards pass on valid intervals and that both first() overloads still return
+// the correct boundary element. See https://github.com/boostorg/icl/issues/58
+BOOST_AUTO_TEST_CASE(test_itl_interval_first_last_symmetry)
+{
+    // Static interval types -> first()/last() overloads gated on is_static_*.
+    BOOST_CHECK_EQUAL(icl::first(right_open_interval<int>(2,7)), 2); // [2,7)
+    BOOST_CHECK_EQUAL(icl::first(left_open_interval <int>(2,7)), 3); // (2,7]
+    BOOST_CHECK_EQUAL(icl::first(open_interval      <int>(2,7)), 3); // (2,7)
+    BOOST_CHECK_EQUAL(icl::first(closed_interval    <int>(2,7)), 2); // [2,7]
+
+    BOOST_CHECK_EQUAL(icl::last (right_open_interval<int>(2,7)), 6); // [2,7)
+    BOOST_CHECK_EQUAL(icl::last (left_open_interval <int>(2,7)), 7); // (2,7]
+    BOOST_CHECK_EQUAL(icl::last (open_interval      <int>(2,7)), 6); // (2,7)
+    BOOST_CHECK_EQUAL(icl::last (closed_interval    <int>(2,7)), 7); // [2,7]
+
+    // Dynamic bounds -> the is_discrete_interval first()/last() overloads,
+    // exercising both branches of the is_left_closed/is_right_closed guards.
+    BOOST_CHECK_EQUAL(icl::first(interval<int>::right_open(2,7)), 2);
+    BOOST_CHECK_EQUAL(icl::first(interval<int>::left_open (2,7)), 3);
+    BOOST_CHECK_EQUAL(icl::first(interval<int>::open      (2,7)), 3);
+    BOOST_CHECK_EQUAL(icl::first(interval<int>::closed    (2,7)), 2);
+
+    BOOST_CHECK_EQUAL(icl::last (interval<int>::right_open(2,7)), 6);
+    BOOST_CHECK_EQUAL(icl::last (interval<int>::left_open (2,7)), 7);
+    BOOST_CHECK_EQUAL(icl::last (interval<int>::open      (2,7)), 6);
+    BOOST_CHECK_EQUAL(icl::last (interval<int>::closed    (2,7)), 7);
+}
 
 //- dyn.dis --------------------------------------------------------------------
 BOOST_AUTO_TEST_CASE_TEMPLATE
