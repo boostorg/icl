@@ -20,6 +20,7 @@ Copyright (c) 1999-2006: Cortex Software GmbH, Kantstrasse 57, Berlin
 #include <boost/icl/detail/on_absorbtion.hpp>
 #include <boost/icl/detail/interval_map_algo.hpp>
 #include <boost/icl/detail/exclusive_less_than.hpp>
+#include <boost/icl/detail/interval_lookup.hpp>
 
 #include <boost/icl/associative_interval_container.hpp>
 
@@ -444,148 +445,22 @@ public:
     //= Iterator related
     //==========================================================================
 
-    // Fix: exclusive_less_than is not a strict weak ordering -- geometric overlap is not transitive.
-    // libc++ >= 22 (PR #155245) uses a single-descent search that requires SWO; raw lower/upper_bound
-    // can branch into the wrong subtree. We anchor on a closed singleton point [v,v], which overlaps
-    // at most one disjoint stored interval, making the restricted comparison a proper SWO.
-    // Static-bounds continuous types (e.g. right_open_interval<double>) are officially unsupported by
-    // ICL for containers and have no singleton(); they fall back to the raw call.
-    static bool key_overlaps(const key_compare& comp, const key_type& a, const key_type& b)
-    { return !comp(a,b) && !comp(b,a); }
-
-    // lower_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
-    // singleton query: we anchor on the closed point [lower,lower] so the
-    // restricted comparison is a strict weak ordering even on standard libraries
-    // that use a single-descent search (libc++ >= 22, PR #155245).
-    // Alternative: a heterogeneous point query (needs C++14 transparent
-    // comparators) -- see interval_base_set::lower_bound_impl.
-    template<class MapT, class ItT, class KT = key_type>
-    static typename enable_if<
-        mpl::or_< has_dynamic_bounds<KT>
-                , is_discrete<typename interval_traits<KT>::domain_type> >, ItT>::type
-    lower_bound_impl(MapT& m, const key_type& interval)
-    {
-        if(icl::is_empty(interval)) return m.end();
-        const key_compare comp;
-        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain minimum
-        // (singleton() is undefined for left_open/open types there).
-        ItT it_;
-        if(numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
-               ::is_less_than(icl::lower(interval)))
-            it_ = m.lower_bound(icl::singleton<key_type>(icl::lower(interval)));
-        else
-            it_ = m.begin();
-        // At most one correction: the anchor can land on a stored interval that merely touches an
-        // open lower bound (e.g. query (2,..] next to stored [..,2]); step past it if so.
-        if(it_ != m.end() && !key_overlaps(comp, (*it_).first, interval)
-                          && !comp(interval, (*it_).first))
-            ++it_;
-        return it_;
-    }
-
-    // Gets lower_bound for `has_static_bounds && is_continuous ` (e.g. right_open_interval<double>)
-    // with point-anchored heterogeneous lookups.
-    //
-    // C++11: std::set has no heterogeneous lookup, so this branch keeps a
-    // documented limitation (use C++14, continuous_interval<> or a Boost.container backend)
-    template<class MapT, class ItT, class KT = key_type>
-    static typename enable_if<
-        mpl::and_< has_static_bounds<KT>
-                , is_continuous<typename interval_traits<KT>::domain_type> >, ItT>::type
-    lower_bound_impl(MapT& m, const key_type& interval)
-    {
-#       if (BOOST_CXX_VERSION >= 201402L)
-        if(icl::is_empty(interval)) return m.end();
-        const key_compare comp;
-        // Anchor on the domain point lower(interval): SWO-safe heterogeneous lookup.
-        ItT it_ = m.lower_bound(icl::lower(interval));
-        // One forward correction for an open lower-bound kiss.
-        if(it_ != m.end() && !key_overlaps(comp, (*it_).first, interval)
-                        && !comp(interval, (*it_).first))
-            ++it_;
-        return it_;
-#       else
-        return m.lower_bound(interval); // C++11: static-continuous unsupported under libc++>=22
-#       endif
-    }
-
-
-    // upper_bound for `has_dynamic_bounds || is_discrete`, using a homogeneous
-    // singleton query: we anchor on the closed point [upper,upper] so the
-    // restricted comparison is a strict weak ordering even on standard libraries
-    // that use a single-descent search (libc++ >= 22, PR #155245).
-    // Alternative: a heterogeneous point query (needs C++14 transparent
-    // comparators) -- see interval_base_set::upper_bound_impl.
-    template<class MapT, class ItT, class KT = key_type>
-    static typename enable_if<
-        mpl::or_< has_dynamic_bounds<KT>
-                , is_discrete<typename interval_traits<KT>::domain_type> >, ItT>::type
-    upper_bound_impl(MapT& m, const key_type& interval)
-    {
-        if(icl::is_empty(interval)) return m.end();
-        const key_compare comp;
-        // C++11 has no heterogeneous lookup: anchor on a singleton, guarding the domain maximum
-        // (singleton() silently wraps for right_open/open types there).
-        ItT it_;
-        if(numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
-                        ::is_greater_than(icl::upper(interval)))
-            it_ = m.upper_bound(icl::singleton<key_type>(icl::upper(interval)));
-        else
-            it_ = m.end();
-        // At most one back-correction: include a stored interval that only touches an open upper
-        // bound. Uses the interval-vs-point comparator overload, so it is valid at the maximum too.
-        if(it_ != m.begin())
-        {
-            ItT prev_ = it_; --prev_;
-            if(!comp((*prev_).first, icl::upper(interval)) && !key_overlaps(comp, (*prev_).first, interval))
-                it_ = prev_;
-        }
-        return it_;
-    }
-
-    // Gets upper_bound for `has_static_bounds && is_continuous ` (e.g. right_open_interval<double>)
-    // with point-anchored heterogeneous lookups.
-    //
-    // C++11: std::set has no heterogeneous lookup, so this branch keeps a
-    // documented limitation (use C++14, continuous_interval<> or a Boost.container backend)
-    template<class MapT, class ItT, class KT = key_type>
-    static typename enable_if<
-        mpl::and_< has_static_bounds<KT>
-                , is_continuous<typename interval_traits<KT>::domain_type> >, ItT>::type
-    upper_bound_impl(MapT& m, const key_type& interval)
-    {
-#       if (BOOST_CXX_VERSION >= 201402L)
-        if(icl::is_empty(interval)) return m.end();
-        const key_compare comp;
-        typedef typename interval_traits<key_type>::domain_type domain_type;
-        const domain_type anchor = icl::upper(interval);          // anchor on the domain point
-        ItT it_ = m.upper_bound(anchor);
-        // One back-correction: an entry whose key starts exactly at upper(interval) (touching
-        // at an open upper bound) is the first entry to the right and must be included.
-        if(it_ != m.begin())
-        {
-            ItT prev_ = it_; --prev_;
-            if(!comp((*prev_).first, anchor) && !key_overlaps(comp, (*prev_).first, interval))
-                it_ = prev_;
-        }
-        return it_;
-#       else
-        return m.upper_bound(interval);
-#       endif
-    }
-
+    // SWO-safe lookup lives in one shared place now: detail::interval_lookup.
+    // The map passes pair_first_key (extracts (*it).first); see that header.
+    // The SWO CONTAINER INVARIANT rationale also lives in that header
+    // (<boost/icl/detail/interval_lookup.hpp>).
 
     iterator lower_bound(const key_type& interval)
-    { return lower_bound_impl<ImplMapT,iterator>(_map, interval); }
+    { return detail::interval_lookup::lower_bound<ImplMapT,iterator>(_map, interval, detail::pair_first_key()); }
 
     iterator upper_bound(const key_type& interval)
-    { return upper_bound_impl<ImplMapT,iterator>(_map, interval); }
+    { return detail::interval_lookup::upper_bound<ImplMapT,iterator>(_map, interval, detail::pair_first_key()); }
 
     const_iterator lower_bound(const key_type& interval)const
-    { return lower_bound_impl<const ImplMapT,const_iterator>(_map, interval); }
+    { return detail::interval_lookup::lower_bound<const ImplMapT,const_iterator>(_map, interval, detail::pair_first_key()); }
 
     const_iterator upper_bound(const key_type& interval)const
-    { return upper_bound_impl<const ImplMapT,const_iterator>(_map, interval); }
+    { return detail::interval_lookup::upper_bound<const ImplMapT,const_iterator>(_map, interval, detail::pair_first_key()); }
 
     std::pair<iterator,iterator> equal_range(const key_type& interval)
     {
@@ -686,21 +561,10 @@ protected:
 
     // disjoint-only insertion hardening (see interval_base_set::_swo_insert)
     std::pair<iterator,bool> _swo_insert(const value_type& x_)
-    {
-        iterator lb_ = this->lower_bound(x_.first);
-        if(lb_ == this->_map.end() || key_compare()(x_.first, (*lb_).first))
-            return std::pair<iterator,bool>(this->_map.insert(lb_, x_), true);
-        return std::pair<iterator,bool>(lb_, false);
-    }
+    { return detail::interval_lookup::insert<ImplMapT,iterator>(_map, x_, detail::pair_first_key()); }
+
     std::pair<iterator,bool> _swo_insert(const iterator& hint_, const value_type& x_)
-    {
-        bool good_ = (hint_ == this->_map.end() || key_compare()(x_.first, (*hint_).first));
-        if(good_ && hint_ != this->_map.begin())
-        { iterator p_ = hint_; --p_; good_ = key_compare()((*p_).first, x_.first); }
-        if(good_)
-            return std::pair<iterator,bool>(this->_map.insert(hint_, x_), true);
-        return _swo_insert(x_);
-    }
+    { return detail::interval_lookup::insert<ImplMapT,iterator>(_map, hint_, x_, detail::pair_first_key()); }
 
     template <class Combiner>
     iterator gap_insert(iterator prior_, const interval_type& inter_val, 
