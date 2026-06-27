@@ -171,6 +171,7 @@ BOOST_AUTO_TEST_CASE(extreme_valued_open_intervals)
 
 BOOST_AUTO_TEST_CASE(test_span_and_hull)
 {
+    using boost::icl::span;
     typedef closed_interval<int> cl_I_int;
     cl_I_int span_1_2 = span< cl_I_int >(1,2);
     cl_I_int span_2_1 = span< cl_I_int >(2,1);
