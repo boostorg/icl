@@ -162,11 +162,25 @@ jobs:
             os: ubuntu-latest
             install: clang-19
           - toolset: clang
+            compiler: clang++-19
+            stdlib: libc++
+            cxxstd: "11,14,17,20,2b"
+            container: ubuntu:24.04
+            os: ubuntu-latest
+            install: clang-19 libc++-19-dev
+          - toolset: clang
             compiler: clang++-20
             cxxstd: "11,14,17,20,23,2c"
             container: ubuntu:24.04
             os: ubuntu-latest
             install: clang-20
+          - toolset: clang
+            compiler: clang++-20
+            stdlib: libc++
+            cxxstd: "11,14,17,20,23,2c"
+            container: ubuntu:24.04
+            os: ubuntu-latest
+            install: clang-20 libc++-20-dev
           - toolset: clang
             compiler: clang++-21
             cxxstd: "11,14,17,20,23,2c"
@@ -174,11 +188,25 @@ jobs:
             os: ubuntu-latest
             install: clang-21
           - toolset: clang
+            compiler: clang++-21
+            stdlib: libc++
+            cxxstd: "11,14,17,20,23,2c"
+            container: ubuntu:26.04
+            os: ubuntu-latest
+            install: clang-21 libc++-21-dev
+          - toolset: clang
             compiler: clang++-22
             cxxstd: "11,14,17,20,23,2c"
             container: ubuntu:26.04
             os: ubuntu-latest
             install: clang-22
+          - toolset: clang
+            compiler: clang++-22
+            stdlib: libc++
+            cxxstd: "11,14,17,20,23,2c"
+            container: ubuntu:26.04
+            os: ubuntu-latest
+            install: clang-22 libc++-22-dev
           - toolset: clang
             cxxstd: "11,14,17,20,2b"
             os: macos-14
@@ -243,7 +271,7 @@ jobs:
         run: |
           cd ../boost-root
           export ADDRMD=${{matrix.address-model}}
-          ./b2 -j3 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} ${ADDRMD:+address-model=$ADDRMD} variant=debug,release
+          ./b2 -j3 -l240 libs/$LIBRARY/test toolset=${{matrix.toolset}} cxxstd=${{matrix.cxxstd}} ${ADDRMD:+address-model=$ADDRMD} ${{ matrix.stdlib && format('stdlib={0}', matrix.stdlib) }} variant=debug,release
 
   windows:
     strategy:
