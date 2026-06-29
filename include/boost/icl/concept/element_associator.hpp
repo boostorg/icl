@@ -143,7 +143,7 @@ is_element_equal(const Type& left, const Type& right)
 { return left == right; }
 
 
-/* Strict weak less ordering which is given by the Compare order */
+/* Strict partial less ordering which is given by the Compare order */
 template<class Type>
 inline typename enable_if<is_associative_element_container<Type>, bool>::type
 operator < (const Type& left, const Type& right)

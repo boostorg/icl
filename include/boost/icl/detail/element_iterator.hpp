@@ -8,10 +8,21 @@ Copyright (c) 2009-2009: Joachim Faulhaber
 #ifndef BOOST_ICL_DETAIL_ELEMENT_ITERATOR_HPP_JOFA_091104
 #define BOOST_ICL_DETAIL_ELEMENT_ITERATOR_HPP_JOFA_091104
 
+#include <boost/config.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/icl/type_traits/succ_pred.hpp>
 #include <boost/icl/detail/mapped_reference.hpp>
+
+#if BOOST_CXX_VERSION >= 202002L
+#include <iterator>
+#endif
+
+namespace boost{namespace movelib{
+
+template<class It> class reverse_iterator;
+
+}} // namespace movelib boost
 
 namespace boost{namespace icl
 {
@@ -59,6 +70,13 @@ template<class BaseIteratorT>
 struct is_reverse<std::reverse_iterator<BaseIteratorT> >
 { 
     typedef is_reverse<std::reverse_iterator<BaseIteratorT> > type; 
+    BOOST_STATIC_CONSTANT(bool, value = true);
+};
+
+template<class BaseIteratorT>
+struct is_reverse<boost::movelib::reverse_iterator<BaseIteratorT> >
+{ 
+    typedef is_reverse<boost::movelib::reverse_iterator<BaseIteratorT> > type; 
     BOOST_STATIC_CONSTANT(bool, value = true);
 };
 
@@ -332,6 +350,32 @@ private:
 };
 
 }} // namespace icl boost
+
+#if BOOST_CXX_VERSION >= 202002L
+// std::iter_value_t<It> falls back to std::indirectly_readable_traits<It>::value_type when
+// std::iterator_traits<It> is not specialized, but std::indirectly_readable_traits<It> is
+// ill-defined if It::value_type and It::element_type _both_ exist and are _not_ the same, which
+// is precisely the case for element_iterator<SegmentIteratorT>.
+// Workaround is to specialize std::iterator_traits<element_iterator<SegmentIteratorT>>. We do this
+// by deriving from std::iterator_traits<derived_wrapper<element_iterator<SegmentIteratorT>>> so
+// that we don't have to revisit this ever even if more typedefs are added to std::iterator_traits
+// in future versions of the C++ standard.
+
+namespace boost{namespace icl{namespace detail{
+
+template <class Class> struct derived_wrapper: Class {};
+
+}}} // namespace detail icl boost
+
+namespace std{
+
+template <class SegmentIteratorT> 
+struct iterator_traits< ::boost::icl::element_iterator<SegmentIteratorT>> :
+    iterator_traits< ::boost::icl::detail::derived_wrapper< ::boost::icl::element_iterator<SegmentIteratorT>>>
+{};
+
+} // namespace std
+#endif
 
 #endif // BOOST_ICL_DETAIL_ELEMENT_ITERATOR_HPP_JOFA_091104
 

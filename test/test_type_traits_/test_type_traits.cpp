@@ -82,7 +82,12 @@ BOOST_AUTO_TEST_CASE(test_is_key_container_of)
     BOOST_CHECK((!is_key_container_of<int, icl::map<int,int> >::value));
     BOOST_CHECK((!is_key_container_of<std::pair<int,int> , icl::map<int,int> >::value));
     BOOST_CHECK(( is_key_container_of<std::set<int>,       std::set<int>     >::value));
-    BOOST_CHECK(( is_key_container_of<ICL_IMPL_SPACE::set<int>,       icl::map<int,int> >::value));
+
+    // boost::container::set default allocator arg is void, hence we don't rely on
+    // defaults here.
+    BOOST_CHECK(( is_key_container_of<ICL_IMPL_SPACE::set<int, std::less<int>, std::allocator<int>>,
+                  icl::map<int,int> >::value));
+
     BOOST_CHECK(( is_key_container_of<icl::map<int,int>,   icl::map<int,int> >::value));
 }
 
