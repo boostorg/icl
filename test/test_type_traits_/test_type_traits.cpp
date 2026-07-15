@@ -10,6 +10,7 @@ Copyright (c) 2008-2009: Joachim Faulhaber
 #include <disable_test_warnings.hpp>
 #include <limits>
 #include <complex>
+#include <functional>
 #include <string>
 #include <vector>
 #include <set>
@@ -59,6 +60,34 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_is_continuous_type_T, T, continuous_types)
     BOOST_CHECK(!is_discrete<T>::value);
 }
 
+// https://github.com/boostorg/icl/issues/58
+// numeric_minimum/numeric_maximum must not consult std::numeric_limits unless
+// it is actually specialized, and must use lowest() (not min()) for the lower
+// extreme so non-integral domains are handled soundly.
+BOOST_AUTO_TEST_CASE(test_numeric_minimum_maximum_bounds)
+{
+    typedef boost::rational<int> Q;
+
+    // Integral: lowest()==min(), behavior preserved.
+    BOOST_CHECK(( numeric_minimum<int, std::less<int>,    is_numeric<int>::value>::is_less_than(-1)));
+    BOOST_CHECK((!numeric_minimum<int, std::less<int>,    is_numeric<int>::value>::is_less_than((std::numeric_limits<int>::min)())));
+    BOOST_CHECK(( numeric_maximum<int, std::less<int>,    is_numeric<int>::value>::is_greater_than(1)));
+    BOOST_CHECK((!numeric_maximum<int, std::less<int>,    is_numeric<int>::value>::is_greater_than((std::numeric_limits<int>::max)())));
+
+    // Floating point: the min()/lowest() trap. A negative value is a valid lower bound.
+    BOOST_CHECK(( numeric_minimum<double, std::less<double>,    is_numeric<double>::value>::is_less_than(-1.0)));
+    BOOST_CHECK((!numeric_minimum<double, std::less<double>,    is_numeric<double>::value>::is_less_than(std::numeric_limits<double>::lowest())));
+    BOOST_CHECK(( numeric_maximum<double, std::greater<double>, is_numeric<double>::value>::is_greater_than(-1.0)));
+    BOOST_CHECK((!numeric_maximum<double, std::greater<double>, is_numeric<double>::value>::is_greater_than(std::numeric_limits<double>::lowest())));
+
+    // boost::rational: is_numeric==true but numeric_limits unspecialized -> impose no constraint.
+    BOOST_CHECK((std::numeric_limits<Q>::is_specialized == false));
+    BOOST_CHECK(( numeric_minimum<Q, std::less<Q>,    is_numeric<Q>::value>::is_less_than(Q(-1,1))));
+    BOOST_CHECK(( numeric_minimum<Q, std::less<Q>,    is_numeric<Q>::value>::is_less_than(Q( 0,1))));
+    BOOST_CHECK(( numeric_maximum<Q, std::less<Q>,    is_numeric<Q>::value>::is_greater_than(Q(-1,1))));
+    BOOST_CHECK(( numeric_maximum<Q, std::greater<Q>, is_numeric<Q>::value>::is_greater_than(Q( 0,1))));
+}
+
 BOOST_AUTO_TEST_CASE(test_is_continuous_type)
 {
     BOOST_CHECK(is_continuous<std::vector<int> >::value);
@@ -82,7 +111,12 @@ BOOST_AUTO_TEST_CASE(test_is_key_container_of)
     BOOST_CHECK((!is_key_container_of<int, icl::map<int,int> >::value));
     BOOST_CHECK((!is_key_container_of<std::pair<int,int> , icl::map<int,int> >::value));
     BOOST_CHECK(( is_key_container_of<std::set<int>,       std::set<int>     >::value));
-    BOOST_CHECK(( is_key_container_of<ICL_IMPL_SPACE::set<int>,       icl::map<int,int> >::value));
+
+    // boost::container::set default allocator arg is void, hence we don't rely on
+    // defaults here.
+    BOOST_CHECK(( is_key_container_of<ICL_IMPL_SPACE::set<int, std::less<int>, std::allocator<int>>,
+                  icl::map<int,int> >::value));
+
     BOOST_CHECK(( is_key_container_of<icl::map<int,int>,   icl::map<int,int> >::value));
 }
 

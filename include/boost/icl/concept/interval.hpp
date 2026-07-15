@@ -96,6 +96,12 @@ typename enable_if
 singleton(const typename interval_traits<Type>::domain_type& value)
 {
     //ASSERT: This always creates an interval with exactly one element
+    typedef typename interval_traits<Type>::domain_type    domain_type;
+    typedef typename interval_traits<Type>::domain_compare domain_compare;
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than(value) ));
+    boost::ignore_unused<domain_type, domain_compare>();
+
     return interval_traits<Type>::construct(value, domain_next<Type>(value));
 }
 
@@ -127,6 +133,8 @@ singleton(const typename interval_traits<Type>::domain_type& value)
     typedef typename interval_traits<Type>::domain_compare domain_compare;
     BOOST_ASSERT((numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
                                  ::is_less_than(value)));
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than(value)));
     boost::ignore_unused<domain_type, domain_compare>();
 
     return interval_traits<Type>::construct( domain_prior<Type>(value)
@@ -168,6 +176,12 @@ typename enable_if
 >::type
 unit_trail(const typename interval_traits<Type>::domain_type& value)
 {
+    typedef typename interval_traits<Type>::domain_type    domain_type;
+    typedef typename interval_traits<Type>::domain_compare domain_compare;
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than(value) ));
+    boost::ignore_unused<domain_type, domain_compare>();
+
     return interval_traits<Type>::construct(value, domain_next<Type>(value));
 }
 
@@ -202,6 +216,8 @@ unit_trail(const typename interval_traits<Type>::domain_type& value)
     typedef typename interval_traits<Type>::domain_compare domain_compare;
     BOOST_ASSERT((numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
                                  ::is_less_than(value)));
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than(value)));
     boost::ignore_unused<domain_type, domain_compare>();
 
     return interval_traits<Type>::construct( domain_prior<Type>(value)
@@ -283,11 +299,21 @@ typename enable_if<is_static_right_open<Type>, Type>::type
 hull(const typename interval_traits<Type>::domain_type& left,
      const typename interval_traits<Type>::domain_type& right)
 {
+    typedef typename interval_traits<Type>::domain_type    domain_type;
     typedef typename interval_traits<Type>::domain_compare domain_compare;
+    boost::ignore_unused<domain_type>();
     if(domain_compare()(left,right))
+    {
+        BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                     ::is_greater_than(right) ));
         return construct<Type>(left, domain_next<Type>(right));
+    }
     else
+    {
+        BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                     ::is_greater_than(left) ));
         return construct<Type>(right, domain_next<Type>(left));
+    }
 }
 
 template<class Type>
@@ -338,6 +364,8 @@ hull(const typename interval_traits<Type>::domain_type& left,
     {
         BOOST_ASSERT((numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
                                      ::is_less_than(left) ));
+        BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                     ::is_greater_than(right) ));
         return construct<Type>( domain_prior<Type>(left)
                               ,  domain_next<Type>(right));
     }
@@ -345,6 +373,8 @@ hull(const typename interval_traits<Type>::domain_type& left,
     {
         BOOST_ASSERT((numeric_minimum<domain_type, domain_compare, is_numeric<domain_type>::value>
                                      ::is_less_than(right) ));
+        BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                     ::is_greater_than(left) ));
         return construct<Type>( domain_prior<Type>(right)
                               ,  domain_next<Type>(left));
     }
@@ -400,6 +430,12 @@ enable_if< mpl::and_< mpl::or_<is_static_left_open<Type>, is_static_open<Type> >
          , typename interval_traits<Type>::domain_type>::type
 first(const Type& object)
 {
+    typedef typename interval_traits<Type>::domain_type    domain_type;
+    typedef typename interval_traits<Type>::domain_compare domain_compare;
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than(lower(object)) ));
+    boost::ignore_unused<domain_type, domain_compare>();
+
     return domain_next<Type>(lower(object));
 }
 
@@ -408,6 +444,12 @@ inline typename enable_if<is_discrete_interval<Type>,
                           typename interval_traits<Type>::domain_type>::type
 first(const Type& object)
 {
+    typedef typename interval_traits<Type>::domain_type    domain_type;
+    typedef typename interval_traits<Type>::domain_compare domain_compare;
+    BOOST_ASSERT((numeric_maximum<domain_type, domain_compare, is_numeric<domain_type>::value>
+                                 ::is_greater_than_or(lower(object), is_left_closed(object.bounds())) ));
+    boost::ignore_unused<domain_type, domain_compare>();
+
     return is_left_closed(object.bounds()) ?
                                  lower(object) :
                domain_next<Type>(lower(object));
@@ -565,8 +607,10 @@ template<class Type>
 typename boost::enable_if<is_static_open<Type>, bool>::type
 is_empty(const Type& object)
 {
-    return domain_less_equal<Type>(upper(object),                   lower(object) )
-        || domain_less_equal<Type>(upper(object), domain_next<Type>(lower(object)));
+    // we use ternary operator instead of || to prevent a codegen bug with GCC 10-11
+    return domain_less_equal<Type>(upper(object), lower(object))?
+        true:
+        domain_less_equal<Type>(upper(object), domain_next<Type>(lower(object)));
 }
 
 template<class Type>
@@ -576,8 +620,10 @@ is_empty(const Type& object)
     if(object.bounds() == interval_bounds::closed())
         return domain_less<Type>(upper(object), lower(object));
     else if(object.bounds() == interval_bounds::open())
-        return domain_less_equal<Type>(upper(object),                   lower(object) )
-            || domain_less_equal<Type>(upper(object), domain_next<Type>(lower(object)));
+        // we use ternary operator instead of || to prevent a codegen bug with GCC 10-11
+        return domain_less_equal<Type>(upper(object), lower(object))?
+            true:
+            domain_less_equal<Type>(upper(object), domain_next<Type>(lower(object)));
     else
         return domain_less_equal<Type>(upper(object), lower(object));
 }
