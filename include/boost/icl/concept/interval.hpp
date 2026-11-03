@@ -11,6 +11,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 #include <boost/assert.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_integral.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/not.hpp>
@@ -20,6 +21,7 @@ Copyright (c) 2010-2010: Joachim Faulhaber
 #include <boost/icl/type_traits/infinity.hpp>
 #include <boost/icl/type_traits/succ_pred.hpp>
 #include <boost/icl/type_traits/is_numeric.hpp>
+#include <boost/icl/type_traits/is_increasing.hpp>
 #include <boost/icl/type_traits/is_discrete.hpp>
 #include <boost/icl/type_traits/is_continuous.hpp>
 #include <boost/icl/type_traits/is_asymmetric_interval.hpp>
@@ -1037,6 +1039,34 @@ touches(const Type& left, const Type& right)
 //==============================================================================
 //= Size
 //==============================================================================
+namespace detail
+{
+    template<class SizeT, class DomainT>
+    SizeT inclusive_distance(const DomainT& first, const DomainT& last, boost::true_type)
+    {
+        // Convert before subtraction so a signed domain need not hold the distance.
+        return static_cast<SizeT>(last) - static_cast<SizeT>(first)
+             + unit_element<SizeT>::value();
+    }
+
+    template<class SizeT, class DomainT>
+    SizeT inclusive_distance(const DomainT& first, const DomainT& last, boost::false_type)
+    {
+        return static_cast<SizeT>(last - first) + unit_element<SizeT>::value();
+    }
+
+    template<class SizeT, class Type>
+    SizeT discrete_interval_size(const Type& object)
+    {
+        typedef typename interval_traits<Type>::domain_type DomainT;
+        typedef typename interval_traits<Type>::domain_compare Compare;
+        // Count between included endpoints without stepping beyond the domain.
+        return is_increasing<DomainT, Compare>::value
+             ? inclusive_distance<SizeT>(icl::first(object), icl::last(object), boost::is_integral<DomainT>())
+             : inclusive_distance<SizeT>(icl::last(object), icl::first(object), boost::is_integral<DomainT>());
+    }
+}
+
 //- cardinality ----------------------------------------------------------------
 
 template<class Type>
@@ -1061,7 +1091,7 @@ cardinality(const Type& object)
 {
     typedef typename size_type_of<interval_traits<Type> >::type SizeT;
     return icl::is_empty(object) ? identity_element<SizeT>::value()
-                                 : static_cast<SizeT>(last_next(object) - first(object));
+                                 : detail::discrete_interval_size<SizeT>(object);
 }
 
 template<class Type>
@@ -1083,7 +1113,7 @@ cardinality(const Type& object)
 {
     typedef typename size_type_of<interval_traits<Type> >::type SizeT;
     return icl::is_empty(object) ? identity_element<SizeT>::value()
-                                 : static_cast<SizeT>(last_next(object) - first(object));
+                                 : detail::discrete_interval_size<SizeT>(object);
 }
 
 template<class Type>
@@ -1093,7 +1123,7 @@ cardinality(const Type& object)
 {
     typedef typename size_type_of<interval_traits<Type> >::type SizeT;
     return icl::is_empty(object) ? identity_element<SizeT>::value()
-                                 : static_cast<SizeT>(last_next(object) - first(object));
+                                 : detail::discrete_interval_size<SizeT>(object);
 }
 
 
@@ -1125,7 +1155,7 @@ length(const Type& object)
 {
     typedef typename difference_type_of<interval_traits<Type> >::type DiffT;
     return icl::is_empty(object) ? identity_element<DiffT>::value()
-                                 : last_next(object) - first(object);
+                                 : detail::discrete_interval_size<DiffT>(object);
 }
 
 template<class Type>
@@ -1145,7 +1175,7 @@ length(const Type& object)
 {
     typedef typename difference_type_of<interval_traits<Type> >::type DiffT;
     return icl::is_empty(object) ? identity_element<DiffT>::value()
-                                 : last_next(object) - first(object);
+                                 : detail::discrete_interval_size<DiffT>(object);
 }
 
 //- iterative_size -------------------------------------------------------------

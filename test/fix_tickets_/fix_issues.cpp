@@ -12,6 +12,11 @@ Copyright (c) 2026: Joachim Faulhaber
 
 #include <boost/icl/interval_set.hpp>
 #include <boost/icl/right_open_interval.hpp>
+#include <boost/icl/left_open_interval.hpp>
+#include <boost/icl/closed_interval.hpp>
+#include <boost/icl/open_interval.hpp>
+#include <boost/cstdint.hpp>
+#include <limits>
 
 
 //CL #include <iostream>
@@ -23,6 +28,77 @@ using namespace boost::icl;
 
 using right_open_interval_set = interval_set<int, std::less, right_open_interval<int>>; 
 using const_interval_iterator = right_open_interval_set::const_iterator;
+
+template<template<class> class Compare, class Interval>
+void check_interval_size(const Interval& span, std::size_t expected)
+{
+    typedef typename interval_traits<Interval>::domain_type Domain;
+    interval_set<Domain, Compare, Interval> values;
+    values.add(span);
+    BOOST_CHECK_EQUAL(cardinality(span), expected);
+    BOOST_CHECK_EQUAL(cardinality(values), expected);
+    BOOST_CHECK_EQUAL(length(span), expected);
+    BOOST_CHECK_EQUAL(length(values), expected);
+}
+
+template<class Domain>
+void check_cardinality_at_limits()
+{
+    typedef discrete_interval<Domain> Interval;
+    const Domain high = (std::numeric_limits<Domain>::max)();
+    const Domain low = (std::numeric_limits<Domain>::min)();
+
+    check_interval_size<std::less>(Interval::closed(high, high), 1);
+    check_interval_size<std::less>(Interval::closed(high - 3, high), 4);
+    check_interval_size<std::less>(Interval::left_open(high - 3, high), 3);
+    check_interval_size<std::less>(Interval::right_open(high - 3, high), 3);
+    check_interval_size<std::less>(Interval::open(high - 3, high), 2);
+    check_interval_size<std::less>(Interval::right_open(high, high), 0);
+
+    check_interval_size<std::less>(closed_interval<Domain>(high - 3, high), 4);
+    check_interval_size<std::less>(left_open_interval<Domain>(high - 3, high), 3);
+    check_interval_size<std::less>(right_open_interval<Domain>(high - 3, high), 3);
+    check_interval_size<std::less>(open_interval<Domain>(high - 3, high), 2);
+
+    typedef discrete_interval<Domain, std::greater> Reverse;
+    check_interval_size<std::greater>(Reverse::closed(low, low), 1);
+    check_interval_size<std::greater>(Reverse::closed(low + 3, low), 4);
+    check_interval_size<std::greater>(Reverse::open(low + 3, low), 2);
+    check_interval_size<std::greater>(closed_interval<Domain, std::greater>(low + 3, low), 4);
+    check_interval_size<std::greater>(left_open_interval<Domain, std::greater>(low + 3, low), 3);
+    check_interval_size<std::greater>(right_open_interval<Domain, std::greater>(low + 3, low), 3);
+    check_interval_size<std::greater>(open_interval<Domain, std::greater>(low + 3, low), 2);
+}
+
+// 
+// https://github.com/boostorg/icl/issues/41
+// https://github.com/boostorg/icl/issues/63
+BOOST_AUTO_TEST_CASE(issue_41_cardinality_at_domain_limits_plus_decrementing_domains)
+{
+    check_cardinality_at_limits<boost::uint8_t>();
+    check_cardinality_at_limits<boost::int8_t>();
+    check_cardinality_at_limits<boost::uint32_t>();
+    check_cardinality_at_limits<boost::int32_t>();
+    check_cardinality_at_limits<boost::uint64_t>();
+    check_cardinality_at_limits<boost::int64_t>();
+
+    // The size type can represent more values than the signed domain difference.
+    if (std::numeric_limits<std::size_t>::digits > 32)
+    {
+        typedef discrete_interval<boost::int32_t> Interval;
+        BOOST_CHECK_EQUAL(cardinality(Interval::closed(
+            (std::numeric_limits<boost::int32_t>::min)(),
+            (std::numeric_limits<boost::int32_t>::max)())), boost::uint64_t(1) << 32);
+    }
+    if (std::numeric_limits<std::size_t>::digits >= 64)
+    {
+        typedef discrete_interval<boost::int64_t> Interval;
+        BOOST_CHECK_EQUAL(cardinality(Interval::closed(
+            (std::numeric_limits<boost::int64_t>::min)() + 1,
+            (std::numeric_limits<boost::int64_t>::max)())),
+            (std::numeric_limits<boost::uint64_t>::max)());
+    }
+}
 
 // 
 // https://github.com/boostorg/icl/issues/51
