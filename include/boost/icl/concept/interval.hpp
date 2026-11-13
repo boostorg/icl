@@ -1010,6 +1010,7 @@ template<class Type>
 typename boost::enable_if<is_asymmetric_interval<Type>, bool>::type
 touches(const Type& left, const Type& right)
 {
+    BOOST_ASSERT(!(icl::is_empty(left) || icl::is_empty(right)));
     return domain_equal<Type>(upper(left), lower(right));
 }
 
@@ -1017,6 +1018,7 @@ template<class Type>
 typename boost::enable_if<has_symmetric_bounds<Type>, bool>::type
 touches(const Type& left, const Type& right)
 {
+    BOOST_ASSERT(!(icl::is_empty(left) || icl::is_empty(right)));
     return domain_equal<Type>(last_next(left), first(right));
 }
 
@@ -1024,6 +1026,7 @@ template<class Type>
 typename boost::enable_if<is_discrete_interval<Type>, bool>::type
 touches(const Type& left, const Type& right)
 {
+    BOOST_ASSERT(!(icl::is_empty(left) || icl::is_empty(right)));
     return domain_equal<Type>(domain_next<Type>(last(left)), first(right));
 }
 
@@ -1031,6 +1034,7 @@ template<class Type>
 typename boost::enable_if<is_continuous_interval<Type>, bool>::type
 touches(const Type& left, const Type& right)
 {
+    BOOST_ASSERT(!(icl::is_empty(left) || icl::is_empty(right)));
     return is_complementary(inner_bounds(left,right))
         && domain_equal<Type>(upper(left), lower(right));
 }

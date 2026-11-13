@@ -27,7 +27,7 @@
 [table
 
 [[['*Miscellaneous Interval Functions*]]               [Description]         ]
-[[`bool touches(const T&, const T&)`]                  [`touches(x,y)` Between the disjoint intervals `x` and `y` are no elements. ] ]
+[[`bool touches(const T&, const T&)`]                  [`touches(x,y)` Between the disjoint and non-empty intervals `x` and `y` (`x` preceding `y`) are no elements. ] ]
 [[`T inner_complement(const T&, const T&)`]            [`z = inner_complement(x,y)` `z` is the interval between `x` and `y`] ]
 [[`difference_type distance(const T&, const T&)`]      [`d = distance(x,y)` If the domain type of the interval has a difference_type, 
                                                          `d` is the distance between `x` and `y`.]         ]
